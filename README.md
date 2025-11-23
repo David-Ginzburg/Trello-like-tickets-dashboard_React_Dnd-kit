@@ -84,11 +84,14 @@ The project includes a GitHub Actions workflow for automatic deployment to GitHu
 1. **Enable GitHub Pages** in your repository settings:
 
    - Go to Settings → Pages
-   - Source: Select "GitHub Actions"
+   - **IMPORTANT**: Source must be set to **"GitHub Actions"** (not "Deploy from a branch" or Jekyll)
+   - If you see `actions/jekyll-build-pages@v1` in Actions logs instead of our Vite build, it means Pages is not configured correctly
 
 2. **Push to main branch**: The workflow will automatically build and deploy your application.
 
 3. **Manual deployment**: You can also trigger deployment manually from the Actions tab → "Deploy to GitHub Pages" → "Run workflow".
+
+**Troubleshooting**: If you see Jekyll build (`actions/jekyll-build-pages@v1`) in Actions logs instead of our Vite build, check that Pages source is set to "GitHub Actions" in repository settings. The `.nojekyll` file is automatically created during build to prevent Jekyll processing.
 
 #### How it works
 
