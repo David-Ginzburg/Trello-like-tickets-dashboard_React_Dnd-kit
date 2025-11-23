@@ -21,6 +21,11 @@ const getBasePath = () => {
 // https://vite.dev/config/
 export default defineConfig({
 	base: getBasePath(),
+	build: {
+		outDir: "dist",
+		// Ensure assets are placed correctly for GitHub Pages
+		assetsDir: "assets",
+	},
 	plugins: [
 		react(),
 		// Mock API plugin only works in dev mode (configureServer is only called in dev)
