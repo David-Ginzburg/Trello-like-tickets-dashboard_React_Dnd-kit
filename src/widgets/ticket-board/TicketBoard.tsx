@@ -40,7 +40,7 @@ export const TicketBoard = () => {
 		handleDragEnd,
 		handleDragCancel,
 	} = useDragAndDrop({
-		tickets: filteredTickets,
+		tickets: tickets,
 		selectedTicket,
 		onTicketUpdate: updateTicket,
 		onSelectedTicketUpdate: updateSelectedTicket,
@@ -97,7 +97,7 @@ export const TicketBoard = () => {
 							onTicketClick={openModal}
 							activeId={activeId}
 							activeTicket={activeTicket}
-							isDragDisabled={filter.trim().length > 0 || isMobile}
+							isDragDisabled={isMobile}
 						/>
 					))}
 				</div>

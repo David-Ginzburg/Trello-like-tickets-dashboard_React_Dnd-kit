@@ -38,6 +38,15 @@
 	background-size: 16px 16px;
 }
 
+/* Clear button (X) cursor pointer */
+.input--search::-webkit-search-cancel-button {
+	cursor: pointer;
+}
+
+.input--search::-ms-clear {
+	cursor: pointer;
+}
+
 .input--error {
 	border-color: var(--color-danger);
 }
@@ -46,4 +55,3 @@
 	border-color: var(--color-danger);
 	box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
 }
-

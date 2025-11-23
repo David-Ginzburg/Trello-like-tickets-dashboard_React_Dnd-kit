@@ -42,8 +42,10 @@ export const useDragAndDrop = ({
 	const lastTargetIndex = useRef<number | null>(null);
 	const lastTargetContainer = useRef<TicketStatus | null>(null);
 
-	// Disable drag-and-drop when filter has any characters or on mobile devices
-	const isDragDisabled = filter.trim().length > 0 || isMobile;
+	// Disable drag-and-drop on mobile devices
+	const isDragDisabled = isMobile;
+	// Disable reorder (within same column) when filter has any characters, but allow move (between columns)
+	const isReorderDisabled = filter.trim().length > 0;
 
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
@@ -125,7 +127,7 @@ export const useDragAndDrop = ({
 	);
 
 	const handleDragStart = (event: DragStartEvent) => {
-		// Block drag start if filter is active
+		// Block drag start on mobile devices
 		if (isDragDisabled) {
 			return;
 		}
@@ -148,7 +150,7 @@ export const useDragAndDrop = ({
 	}, [tickets]);
 
 	const handleDragOver = (event: DragOverEvent) => {
-		// Block drag over if filter is active
+		// Block drag over on mobile devices
 		if (isDragDisabled) {
 			return;
 		}
@@ -216,6 +218,11 @@ export const useDragAndDrop = ({
 			// This happens when we drag the card out of the column area
 			lastTargetIndex.current = null;
 			lastTargetContainer.current = null;
+			return;
+		}
+
+		// Block reorder (within same column) if filter is active
+		if (originalStatus === overContainer && isReorderDisabled) {
 			return;
 		}
 
@@ -343,7 +350,7 @@ export const useDragAndDrop = ({
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {
-		// Block drag end if filter is active
+		// Block drag end on mobile devices
 		if (isDragDisabled) {
 			setActiveId(null);
 			setClonedTickets(null);
@@ -477,6 +484,21 @@ export const useDragAndDrop = ({
 		const activeItems = sourceTickets.filter((t) => t.status === activeContainer);
 
 		const activeIndex = activeItems.findIndex((t) => t.id === activeId);
+
+		// Block reorder (within same column) if filter is active
+		if (activeContainer === overContainer && isReorderDisabled) {
+			// Restore original state
+			if (clonedTickets) {
+				const clonedTicketIds = clonedTickets.map((t) => t.id);
+				onTicketsReorder(clonedTicketIds, clonedTickets);
+			}
+			setActiveId(null);
+			setClonedTickets(null);
+			lastReorderedIds.current = null;
+			lastTargetIndex.current = null;
+			lastTargetContainer.current = null;
+			return;
+		}
 
 		// If moving within the same column
 		if (activeContainer === overContainer) {
