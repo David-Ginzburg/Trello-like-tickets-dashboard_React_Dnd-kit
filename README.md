@@ -2,13 +2,15 @@
 
 A modern, responsive dashboard for managing customer support tickets with AI-powered resolution tracking.
 
+🌐 **Live Demo**: [https://david-ginzburg.github.io/Trello-like-tickets-dashboard_React_Dnd-kit/](https://david-ginzburg.github.io/Trello-like-tickets-dashboard_React_Dnd-kit/)
+
 ## Features
 
 - 📋 **Ticket Management**: Three-column Kanban board displaying tickets by status
 - 🖱️ **Drag & Drop**: Drag tickets between columns to change status (duplicates Approve/Reject functionality)
 - 🔍 **Search & Filter**: Search tickets by customer name or ticket ID
 - ✅ **Approval Workflow**: Approve or reject pending tickets (buttons or drag & drop)
-- 📊 **Status Tracking**: 
+- 📊 **Status Tracking**:
   - AI Resolved (green) - Tickets resolved by AI
   - Pending Approval (yellow) - Tickets awaiting human approval
   - Escalated (red) - Tickets requiring human intervention
@@ -44,7 +46,7 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
@@ -72,6 +74,34 @@ npm run build
 ```bash
 npm run preview
 ```
+
+### Deployment to GitHub Pages
+
+The project includes a GitHub Actions workflow for automatic deployment to GitHub Pages.
+
+#### Setup
+
+1. **Enable GitHub Pages** in your repository settings:
+
+   - Go to Settings → Pages
+   - Source: Select "GitHub Actions"
+
+2. **Push to main branch**: The workflow will automatically build and deploy your application.
+
+3. **Manual deployment**: You can also trigger deployment manually from the Actions tab → "Deploy to GitHub Pages" → "Run workflow".
+
+#### How it works
+
+- The workflow builds the project using `npm run build`
+- The build output (`dist/`) is uploaded as a GitHub Pages artifact
+- The artifact is deployed to GitHub Pages
+- Base path is automatically configured based on your repository name
+
+#### Configuration
+
+The base path is automatically configured in `vite.config.ts` based on your repository name. If you need to customize it, edit the `getBasePath()` function in `vite.config.ts`.
+
+**Note**: In production mode (GitHub Pages), the application uses IndexedDB via localforage for data persistence instead of the mock API server.
 
 ### Testing
 
