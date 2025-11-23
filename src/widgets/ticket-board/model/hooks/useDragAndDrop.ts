@@ -623,9 +623,15 @@ export const useDragAndDrop = ({
 						onSelectedTicketUpdate(movedTicket);
 					}
 
-					// Show success notification
+					// Show notification based on status
 					const newStatusLabel = TICKET_STATUSES[overContainer].label;
-					toast.success(`Статус изменен на "${newStatusLabel}"`);
+					if (overContainer === "escalated") {
+						// Escalated status - show error notification (red)
+						toast.error(`Ticket status changed to "${newStatusLabel}"`);
+					} else {
+						// Other statuses - show success notification (green)
+						toast.success(`Ticket status changed to "${newStatusLabel}"`);
+					}
 				}
 			} catch (error) {
 				console.error("Failed to move ticket:", error);
@@ -635,7 +641,7 @@ export const useDragAndDrop = ({
 					onSelectedTicketUpdate(originalTicket);
 				}
 				// Show error notification
-				toast.error("Не удалось изменить статус карточки");
+				toast.error("Failed to change ticket status");
 			}
 		}
 

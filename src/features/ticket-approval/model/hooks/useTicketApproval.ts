@@ -19,13 +19,19 @@ export const useTicketApproval = ({ ticket, onStatusChange, onClose }: UseTicket
 			const updatedTicket = await ticketApi.updateTicketStatus(ticket.id, newStatus);
 			onStatusChange(updatedTicket);
 			onClose?.();
-			// Show success notification
+			// Show notification based on status
 			const newStatusLabel = TICKET_STATUSES[newStatus].label;
-			toast.success(`Статус изменен на "${newStatusLabel}"`);
+			if (newStatus === "escalated") {
+				// Reject - show error notification (red)
+				toast.error(`Ticket status changed to "${newStatusLabel}"`);
+			} else {
+				// Approve or other status - show success notification (green)
+				toast.success(`Ticket status changed to "${newStatusLabel}"`);
+			}
 		} catch (error) {
 			console.error("Failed to update ticket status:", error);
 			// Show error notification
-			toast.error("Не удалось изменить статус карточки");
+			toast.error("Failed to change ticket status");
 		} finally {
 			setIsLoading(false);
 		}

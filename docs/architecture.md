@@ -29,9 +29,13 @@ This ensures international collaboration and code maintainability.
 
 - **react-toastify integration**: Added toast notifications for user feedback
 - **Status change notifications**: Notifications appear when ticket status is changed via drag-and-drop or approve/reject buttons
+- **Notification types**: 
+  - Success (green) for approved tickets (ai_resolved) and other status changes
+  - Error (red) for rejected/escalated tickets (escalated)
+  - Error (red) for failed status change operations
+- **Messages**: All notifications are in English
 - **Mobile-friendly**: Toast notifications are optimized for mobile devices with responsive styling
 - **Position**: Notifications appear in the top-right corner on desktop, full-width with margins on mobile
-- **Error handling**: Error notifications shown when status change fails
 
 ### Documentation Updates
 
