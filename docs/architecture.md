@@ -25,14 +25,6 @@ This ensures international collaboration and code maintainability.
 
 ## Recent Changes (2024)
 
-### GitHub Pages Deployment Fix
-
-- **Base path configuration**: Fixed base path determination for GitHub Pages deployment
-- **Environment variables**: Added `VITE_BASE_URL` support for explicit base URL override
-- **Workflow improvements**: Enhanced GitHub Actions workflow to properly set base path environment variables
-- **CI detection**: Added `process.env.CI` check as fallback for GitHub Pages detection
-- **Path resolution**: Ensured Vite correctly applies base path to all asset URLs in production build
-
 ### Documentation Updates
 
 - **Architecture documentation**: Updated to reflect Vite + React architecture instead of Next.js
@@ -533,31 +525,10 @@ src/
 
 ### Deployment
 
-#### GitHub Pages Deployment
-
-- **Automated CI/CD**: GitHub Actions workflow for automatic deployment
-- **Workflow file**: `.github/workflows/deploy.yml`
 - **Build process**: Vite production build with TypeScript compilation
-- **Base path configuration**: Automatically configured based on repository name
-- **Environment variables**: 
-  - `GITHUB_PAGES`: Set to `true` during build
-  - `GITHUB_REPOSITORY`: Repository name in format `owner/repo`
-  - `VITE_BASE_URL`: Explicit base URL override (highest priority)
-- **Build output**: `dist/` directory with `.nojekyll` file to prevent Jekyll processing
-- **Deployment**: Uses `actions/deploy-pages@v4` for GitHub Pages deployment
-
-**Important**: GitHub Pages source must be set to **"GitHub Actions"** in repository settings (not "Deploy from a branch" or Jekyll). If you see `actions/jekyll-build-pages@v1` in Actions logs, it means Pages is not configured correctly.
-
-**Base Path Configuration**:
-- Base path is automatically determined from repository name: `/{repository-name}/`
-- Can be overridden using `VITE_BASE_URL` environment variable
-- Vite automatically updates all asset paths in `index.html` based on base path
-- React Router is configured with `basename` matching Vite base path for proper routing
-
-#### Other Deployment Options
-
-- **Docker**: Containerized deployment (if needed)
+- **Build output**: `dist/` directory with optimized assets
 - **Environment variables**: Secure configuration
+- **Docker**: Containerized deployment (if needed)
 - **Database migrations**: Prisma migration system (if backend is added)
 
 ## Troubleshooting

@@ -27,7 +27,6 @@ export const routes = [
 ];
 
 // Get base path from import.meta.env.BASE_URL (set by Vite)
-// This ensures compatibility with GitHub Pages subdirectory deployment
 const basename = import.meta.env.BASE_URL || "/";
 
 export const router = createBrowserRouter(routes, { basename });

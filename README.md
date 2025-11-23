@@ -2,8 +2,6 @@
 
 A modern, responsive dashboard for managing customer support tickets with AI-powered resolution tracking.
 
-🌐 **Live Demo**: [https://david-ginzburg.github.io/Trello-like-tickets-dashboard_React_Dnd-kit/](https://david-ginzburg.github.io/Trello-like-tickets-dashboard_React_Dnd-kit/)
-
 ## Features
 
 - 📋 **Ticket Management**: Three-column Kanban board displaying tickets by status
@@ -75,36 +73,7 @@ npm run build
 npm run preview
 ```
 
-### Deployment to GitHub Pages
-
-The project includes a GitHub Actions workflow for automatic deployment to GitHub Pages.
-
-#### Setup
-
-1. **Enable GitHub Pages** in your repository settings:
-
-   - Go to Settings → Pages
-   - **IMPORTANT**: Source must be set to **"GitHub Actions"** (not "Deploy from a branch" or Jekyll)
-   - If you see `actions/jekyll-build-pages@v1` in Actions logs instead of our Vite build, it means Pages is not configured correctly
-
-2. **Push to main branch**: The workflow will automatically build and deploy your application.
-
-3. **Manual deployment**: You can also trigger deployment manually from the Actions tab → "Deploy to GitHub Pages" → "Run workflow".
-
-**Troubleshooting**: If you see Jekyll build (`actions/jekyll-build-pages@v1`) in Actions logs instead of our Vite build, check that Pages source is set to "GitHub Actions" in repository settings. The `.nojekyll` file is automatically created during build to prevent Jekyll processing.
-
-#### How it works
-
-- The workflow builds the project using `npm run build`
-- The build output (`dist/`) is uploaded as a GitHub Pages artifact
-- The artifact is deployed to GitHub Pages
-- Base path is automatically configured based on your repository name
-
-#### Configuration
-
-The base path is automatically configured in `vite.config.ts` based on your repository name. If you need to customize it, edit the `getBasePath()` function in `vite.config.ts`.
-
-**Note**: In production mode (GitHub Pages), the application uses IndexedDB via localforage for data persistence instead of the mock API server.
+**Note**: In production mode, the application uses IndexedDB via localforage for data persistence instead of the mock API server.
 
 ### Testing
 
