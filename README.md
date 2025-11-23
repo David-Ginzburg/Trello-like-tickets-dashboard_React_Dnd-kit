@@ -2,6 +2,8 @@
 
 A modern, responsive dashboard for managing customer support tickets with AI-powered resolution tracking.
 
+🌐 **Live Demo**: [https://trello-like-tickets-dashboard-react.vercel.app/](https://trello-like-tickets-dashboard-react.vercel.app/)
+
 ## Features
 
 - 📋 **Ticket Management**: Three-column Kanban board displaying tickets by status
