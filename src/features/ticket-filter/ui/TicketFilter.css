@@ -1,0 +1,10 @@
+.ticket-filter {
+	width: 100%;
+	max-width: 500px;
+	margin-bottom: var(--spacing-lg);
+}
+
+.ticket-filter__input {
+	width: 100%;
+}
+

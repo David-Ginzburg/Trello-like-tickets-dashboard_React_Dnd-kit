@@ -1,0 +1,51 @@
+.ticket-card {
+	padding: var(--spacing-md);
+	margin-bottom: var(--spacing-md);
+}
+
+.ticket-card__header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: var(--spacing-sm);
+}
+
+.ticket-card__id {
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-weight-medium);
+	color: var(--color-text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.ticket-card__body {
+	margin-bottom: var(--spacing-md);
+}
+
+.ticket-card__customer {
+	font-size: var(--font-size-base);
+	font-weight: var(--font-weight-semibold);
+	color: var(--color-text-primary);
+	margin-bottom: var(--spacing-xs);
+}
+
+.ticket-card__issue {
+	font-size: var(--font-size-sm);
+	color: var(--color-text-secondary);
+	line-height: var(--line-height-relaxed);
+	margin: 0;
+}
+
+.ticket-card__footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-top: var(--spacing-sm);
+	border-top: 1px solid var(--color-border);
+}
+
+.ticket-card__date {
+	font-size: var(--font-size-xs);
+	color: var(--color-text-tertiary);
+}
+
