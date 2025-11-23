@@ -5,8 +5,9 @@ A modern, responsive dashboard for managing customer support tickets with AI-pow
 ## Features
 
 - 📋 **Ticket Management**: Three-column Kanban board displaying tickets by status
+- 🖱️ **Drag & Drop**: Drag tickets between columns to change status (duplicates Approve/Reject functionality)
 - 🔍 **Search & Filter**: Search tickets by customer name or ticket ID
-- ✅ **Approval Workflow**: Approve or reject pending tickets
+- ✅ **Approval Workflow**: Approve or reject pending tickets (buttons or drag & drop)
 - 📊 **Status Tracking**: 
   - AI Resolved (green) - Tickets resolved by AI
   - Pending Approval (yellow) - Tickets awaiting human approval
@@ -20,6 +21,7 @@ A modern, responsive dashboard for managing customer support tickets with AI-pow
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
 - **React Router** - Routing
+- **@dnd-kit** - Drag and drop functionality
 - **Feature-Sliced Design** - Architecture methodology
 
 ## Project Structure
