@@ -25,6 +25,13 @@ This ensures international collaboration and code maintainability.
 
 ## Recent Changes (2024)
 
+### Documentation Updates
+
+- **Architecture documentation**: Updated to reflect Vite + React architecture instead of Next.js
+- **Removed Next.js references**: All mentions of Next.js, Server Components, and App Router replaced with Vite + React + React Router
+- **Updated FSD structure**: Documentation now accurately describes React-based Feature-Sliced Design implementation
+- **Component types**: Updated to reflect React client components instead of Next.js Server/Client components
+
 ### Production Storage with IndexedDB
 
 - **Dual storage architecture**: Development uses mock API server, production uses IndexedDB
@@ -90,9 +97,9 @@ This ensures international collaboration and code maintainability.
 
 ### User Interface
 
-- **Loading system**: Added `Spinner` component for loading state display
-- **Improved navigation**: Replaced `window.location.href` with Next.js Router API for better UX
-- **Logout integration**: Removed separate logout page, functionality integrated into Header
+- **Loading system**: Added loading states for async operations
+- **Navigation**: Uses React Router for client-side navigation
+- **Component composition**: UI built from reusable components following FSD principles
 
 ### Caching and Performance
 
@@ -116,7 +123,7 @@ This ensures international collaboration and code maintainability.
 ### 2. Feature-Sliced Design (FSD)
 
 - **Layered structure**: app → widgets → features → entities → shared
-- **Server components by default**: Minimize client-side code
+- **React components**: All components are client-side React components
 - **Reusability**: Components organized by business logic
 
 ## Backend Architecture
@@ -282,6 +289,7 @@ All components use design tokens for consistent styling and easy theming.
 The application uses different storage mechanisms depending on the environment:
 
 **Development Mode (DEV):**
+
 - **Mock API Server**: Vite middleware plugin provides HTTP API endpoints
 - **Location**: `src/shared/mock/`
 - **Files**:
@@ -297,6 +305,7 @@ The application uses different storage mechanisms depending on the environment:
 - **Configuration**: Plugin is registered in `vite.config.ts` and only active in development mode
 
 **Production Mode (BUILD):**
+
 - **IndexedDB Storage**: Client-side storage using localforage library
 - **Location**: `src/shared/api/`
 - **Files**:
@@ -308,6 +317,7 @@ The application uses different storage mechanisms depending on the environment:
 - **Persistence**: All changes persist across page reloads and browser sessions
 
 **API Adapter Pattern:**
+
 - `ticketApi.ts` automatically detects environment (`import.meta.env.DEV`)
 - Uses mock server adapter in development mode
 - Uses IndexedDB adapter in production mode
@@ -330,111 +340,114 @@ The application uses different storage mechanisms depending on the environment:
 ### Feature-Sliced Design (FSD) Structure
 
 ```
-client/src/
-├── app/                    # Next.js App Router (pages)
-│   ├── layout.tsx         # Root layout with Header
-│   ├── page.tsx           # Home page
-│   ├── ui/                # UI components for home page
-│   │   └── FeatureFlagsList.tsx
-│   ├── login/page.tsx     # Login page
-│   ├── register/page.tsx  # Registration page
-│   ├── dashboard/         # Dashboard page
-│   │   ├── page.tsx       # Dashboard page
-│   │   └── ui/            # UI components for dashboard
-│   │       ├── DashboardContent.tsx
-│   │       ├── DashboardWrapper.tsx
-│   │       ├── AnalyticsWidget.tsx
-│   │       └── index.ts
-│   └── settings/page.tsx  # Settings page
-├── features/             # Features layer
-│   ├── auth/            # Authentication
-│   │   └── ui/
-│   │       ├── LoginForm.tsx
-│   │       ├── RegisterForm.tsx
-│   │       └── LogoutButton.tsx
-│   └── admin/           # Admin functionality
-│       └── ui/
-│           └── AdminPanel.tsx
-├── entities/            # Entities layer
-│   ├── user/           # User entity
-│   │   ├── api/
-│   │   │   └── userApi.ts
-│   │   └── model/
-│   │       └── types.ts
-│   └── feature-flag/   # Feature flag entity
-│       ├── api/
-│       │   └── flagsApi.ts
+src/
+├── app/                    # App layer (routing, initialization)
+│   ├── App.tsx            # Root App component
+│   └── router.tsx         # React Router configuration
+├── pages/                  # Pages layer
+│   └── DashboardPage.tsx  # Dashboard page
+├── widgets/                # Widgets layer
+│   └── ticket-board/      # Ticket board widget
+│       ├── TicketBoard.tsx
+│       ├── TicketColumn.tsx
 │       └── model/
-│           └── types.ts
-└── shared/             # Shared layer
-    ├── ui/             # UI components
-    │   ├── button/
-    │   │   └── Button.tsx
-    │   └── spinner/
-    │       └── Spinner.tsx
-    ├── lib/            # Utilities
-    │   ├── auth.ts
-    │   ├── flags.ts
+│           └── hooks/     # Widget-specific hooks
+├── features/               # Features layer
+│   ├── ticket-filter/      # Ticket filtering feature
+│   ├── ticket-approval/    # Ticket approval feature
+│   └── ticket-details/    # Ticket details feature
+├── entities/               # Entities layer
+│   └── ticket/            # Ticket entity
+│       ├── model/
+│       │   ├── types.ts
+│       │   └── hooks/
+│       └── ui/
+│           └── TicketCard.tsx
+└── shared/                 # Shared layer
+    ├── ui/                 # UI components
+    │   ├── Button/
+    │   ├── Input/
+    │   ├── Card/
+    │   └── Modal/
+    ├── api/                # API clients
+    │   ├── ticketApi.ts
+    │   └── indexedDbAdapter.ts
+    ├── mock/               # Mock API
+    │   ├── mockData.ts
+    │   └── mockApiPlugin.ts
+    ├── lib/                # Utilities
     │   └── utils.ts
-    └── api/            # API functions
-        └── auth.ts
+    └── styles/             # Global styles
+        ├── tokens.css
+        ├── reset.css
+        └── globals.css
 ```
 
 ### FSD Layers
 
-#### 1. App Layer (`/client/src/app/`)
+#### 1. App Layer (`/src/app/`)
 
-- **Responsibility**: Next.js App Router pages and routing
-- **Files**: `page.tsx`, `layout.tsx`, `login/page.tsx`, etc.
-- **Type**: Server components
-- **Rules**: Direct composition from features and entities
+- **Responsibility**: Application initialization and routing configuration
+- **Files**: `App.tsx`, `router.tsx`
+- **Type**: React components
+- **Rules**: Sets up routing and composes pages from widgets and features
 - **Features**:
-  - Header integrated into `layout.tsx`
-  - Page-specific components in `ui/` folder
-  - Each component in separate file
-  - No widgets layer - all components are page-specific
+  - React Router configuration
+  - Root App component that wraps the application
+  - Route definitions
 
-#### 2. Features Layer (`/client/src/features/`)
+#### 2. Pages Layer (`/src/pages/`)
+
+- **Responsibility**: Page components that compose widgets and features
+- **Files**: `DashboardPage.tsx`
+- **Type**: React components
+- **Rules**: Pages compose widgets and features, minimal logic
+
+#### 3. Widgets Layer (`/src/widgets/`)
+
+- **Responsibility**: Compositional UI blocks that combine features and entities
+- **Files**: `ticket-board/` - Ticket board widget
+- **Type**: React components with business logic hooks
+- **Rules**: Can use features, entities, and shared layers
+
+#### 4. Features Layer (`/src/features/`)
 
 - **Responsibility**: Business functions and scenarios
 - **Files**:
-  - `auth/` - Authentication (LoginForm, RegisterForm, LogoutButton)
-  - `admin/` - Admin functionality (AdminPanel)
-- **Type**: Mixed (server and client components)
+  - `ticket-filter/` - Ticket filtering feature
+  - `ticket-approval/` - Ticket approval workflow
+  - `ticket-details/` - Ticket details display
+- **Type**: React components with hooks
 - **Rules**: Business logic implementation, can use entities and shared
 
-#### 3. Entities Layer (`/client/src/entities/`)
+#### 5. Entities Layer (`/src/entities/`)
 
 - **Responsibility**: Business entities and data models
 - **Files**:
-  - `user/` - User entity (userApi, types)
-  - `feature-flag/` - Feature flag entity (flagsApi, types)
-- **Type**: Mixed (server and client components)
-- **Rules**: Data models and API, can use shared
+  - `ticket/` - Ticket entity (types, hooks, UI components)
+- **Type**: React components and TypeScript types
+- **Rules**: Data models and entity UI, can use shared
 
-#### 4. Shared Layer (`/client/src/shared/`)
+#### 6. Shared Layer (`/src/shared/`)
 
 - **Responsibility**: Reusable utilities and components
 - **Files**:
-  - `ui/` - UI components (Button, Spinner)
-  - `lib/` - Utilities (auth, flags, utils)
-  - `api/` - API functions (auth)
-- **Type**: Mixed (server and client components)
+  - `ui/` - UI components (Button, Input, Card, Modal)
+  - `lib/` - Utilities (utils.ts)
+  - `api/` - API clients (ticketApi.ts, indexedDbAdapter.ts)
+  - `mock/` - Mock API implementation (mockData.ts, mockApiPlugin.ts)
+  - `styles/` - Global styles and design tokens
+- **Type**: React components, utilities, and configuration
 - **Rules**: No dependencies on other layers
 
 ### Component Types
 
-#### Server Components (Default)
+#### React Components
 
-- **Usage**: Data fetching, static content
-- **Examples**: `DashboardContent`, `FeatureFlagsList`
-- **Benefits**: Better performance, SEO-friendly
-
-#### Client Components
-
-- **Usage**: Interactivity, browser APIs
-- **Examples**: `LoginForm`, `LogoutButton`
-- **Directive**: `'use client'`
+- **Usage**: All components are React client components
+- **State Management**: Uses React hooks (`useState`, `useEffect`, `useCallback`, etc.)
+- **Examples**: `TicketBoard`, `TicketCard`, `TicketFilter`
+- **Benefits**: Interactive UI, client-side state management, browser APIs access
 
 ### Import Rules
 
@@ -461,9 +474,9 @@ client/src/
 
 ### Client-Side Caching
 
-- **Next.js cache**: Automatic page caching
-- **API responses**: Custom caching for feature flags
-- **Component state**: React state management
+- **Vite build**: Optimized production builds with code splitting
+- **API responses**: IndexedDB persistence for production mode
+- **Component state**: React state management with hooks
 
 ## Security
 
@@ -484,16 +497,16 @@ client/src/
 
 ### Optimization
 
-- **Server components**: Reduced client-side JavaScript
-- **Code splitting**: Automatic Next.js code splitting
-- **Image optimization**: Next.js Image component
-- **Caching**: Multiple caching layers
+- **Vite build**: Fast development server and optimized production builds
+- **Code splitting**: Automatic code splitting via Vite
+- **Tree shaking**: Unused code elimination in production builds
+- **Caching**: IndexedDB for data persistence, browser caching for assets
 
 ### Monitoring
 
 - **API logging**: Detailed request/response logging
 - **Error tracking**: Comprehensive error handling
-- **Performance metrics**: Built-in Next.js analytics
+- **Performance metrics**: Browser DevTools Performance API, React DevTools Profiler
 
 ## Development Guidelines
 
@@ -528,10 +541,10 @@ client/src/
 
 ### Debug Tools
 
-- **Server logs**: Detailed API request logging
-- **Browser dev tools**: Client-side debugging
-- **Prisma Studio**: Database inspection
-- **Next.js dev tools**: Performance profiling
+- **Vite dev server**: Fast HMR (Hot Module Replacement) for development
+- **Browser dev tools**: Client-side debugging, React DevTools
+- **IndexedDB inspection**: Browser DevTools → Application → IndexedDB
+- **Performance profiling**: React DevTools Profiler, Chrome DevTools Performance
 
 ## Customer Support Dashboard API
 
@@ -539,13 +552,13 @@ client/src/
 
 The application provides a unified API interface that works differently in dev and production:
 
-| Endpoint | Method | Description | Dev Implementation | Production Implementation |
-|----------|--------|-------------|-------------------|--------------------------|
-| `getTickets()` | - | Get all tickets | `GET /api/tickets` - Vite middleware | IndexedDB via localforage |
-| `refreshTickets()` | - | Reset to initial data | `POST /api/tickets/refresh` - Vite middleware | IndexedDB reset with mock data |
-| `reorderTickets(ticketIds)` | - | Reorder tickets by IDs | `POST /api/tickets/reorder` - Vite middleware | IndexedDB reorder operation |
-| `moveTicketToColumn(id, status, index)` | - | Move ticket to column | `POST /api/tickets/:id/move` - Vite middleware | IndexedDB move operation |
-| `updateTicketStatus(id, status)` | - | Update ticket status | `PATCH /api/tickets/:id` - Vite middleware | IndexedDB update operation |
+| Endpoint                                | Method | Description            | Dev Implementation                             | Production Implementation      |
+| --------------------------------------- | ------ | ---------------------- | ---------------------------------------------- | ------------------------------ |
+| `getTickets()`                          | -      | Get all tickets        | `GET /api/tickets` - Vite middleware           | IndexedDB via localforage      |
+| `refreshTickets()`                      | -      | Reset to initial data  | `POST /api/tickets/refresh` - Vite middleware  | IndexedDB reset with mock data |
+| `reorderTickets(ticketIds)`             | -      | Reorder tickets by IDs | `POST /api/tickets/reorder` - Vite middleware  | IndexedDB reorder operation    |
+| `moveTicketToColumn(id, status, index)` | -      | Move ticket to column  | `POST /api/tickets/:id/move` - Vite middleware | IndexedDB move operation       |
+| `updateTicketStatus(id, status)`        | -      | Update ticket status   | `PATCH /api/tickets/:id` - Vite middleware     | IndexedDB update operation     |
 
 **Note**: In development mode, endpoints are HTTP requests to Vite middleware. In production mode, all operations are direct IndexedDB operations via localforage, providing the same API interface transparently.
 
@@ -577,7 +590,7 @@ DashboardPage
 - **Library**: `@dnd-kit/core` and `@dnd-kit/sortable` for drag-and-drop functionality
 - **Standard hooks**: Uses `useDroppable` and `useSortable` from dnd-kit
 - **Sorting**: Uses `arrayMove` from `@dnd-kit/sortable` for reordering cards within columns
-- **Visual feedback**: 
+- **Visual feedback**:
   - Cards automatically shift to make space when dragging (standard dnd-kit behavior via `transform`)
   - Column highlights when dragging over it using `isOver` from `useDroppable`
   - Dragged card is shown in `DragOverlay` while original becomes transparent

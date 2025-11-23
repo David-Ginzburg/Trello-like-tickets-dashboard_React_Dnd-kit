@@ -72,50 +72,51 @@ For the backend, **Layered Architecture** is applied. This approach ensures stri
 
 ---
 
-## 4. Frontend Architecture (Next.js & Feature-Sliced Design)
+## 4. Frontend Architecture (Vite + React & Feature-Sliced Design)
 
-For the frontend, **Feature-Sliced Design (FSD)** methodology is applied, adapted for **Next.js App Router** and its server-client component model.
+For the frontend, **Feature-Sliced Design (FSD)** methodology is applied, adapted for **Vite + React** application with React Router for routing.
 
 ### 4.1. Key Adaptation Principles
 
-- **Next.js `app` Directory = FSD `pages` Layer:** Routing and page structure are completely managed by the `app` directory. `page.tsx` and `layout.tsx` files are entry points and composition points for underlying layers.
-- **Server Components by default:** All components should be Server Components by default. The `'use client'` directive is used only when the component requires interactivity or browser APIs (`useState`, `useEffect`, `onClick`, etc.).
+- **React Router for routing:** Routing is handled by React Router (`react-router-dom`). Pages are defined in the `pages` layer and composed from widgets, features, and entities.
+- **Client Components by default:** All React components are client-side components. Components use React hooks (`useState`, `useEffect`, etc.) for state management and interactivity.
 
 ### 4.2. Layer Structure (from top to bottom)
 
 #### 1. `app`
 
-- **Location:** `/client/src/app`
-- **Responsibilities:** Routing, metadata definition, page composition from widgets and features. `page.tsx` files should not contain complex logic or markup; their main task is to assemble UI from ready-made blocks.
+- **Location:** `/src/app`
+- **Responsibilities:** Application initialization, routing configuration, root layout. Contains router setup and main App component that composes pages from widgets and features.
 
 #### 2. `widgets`
 
-- **Location:** `/client/src/widgets`
+- **Location:** `/src/widgets`
 - **Responsibilities:** Compositional, self-contained UI blocks. Combine features and entities into a single meaningful block.
-- **Examples:** `<Header />`, `<Sidebar />`, `<ProfileCard />`
-- **Type:** Often Server Components that can accept interactive Client Components as children.
+- **Examples:** `<TicketBoard />`, `<Dashboard />`, `<ProfileCard />`
+- **Type:** React components that compose features and entities, often containing business logic hooks.
 
 #### 3. `features`
 
-- **Location:** `/client/src/features`
+- **Location:** `/src/features`
 - **Responsibilities:** Implementation of business scenarios and user actions. This layer brings business value.
-- **Examples:** `<LoginForm />`, `<RegisterForm />`, `<ChangeRoleButton />`
-- **Type:** Often Client Components (`'use client'`) as they contain state and event handlers.
+- **Examples:** `<TicketFilter />`, `<TicketActions />`, `<TicketDetailsModal />`
+- **Type:** React components with state management and event handlers using hooks.
 
 #### 4. `entities`
 
-- **Location:** `/client/src/entities`
+- **Location:** `/src/entities`
 - **Responsibilities:** Representation of business entities. Application framework.
-- **Examples:** `<UserAvatar user={...} />`, `<RoleBadge role={...} />`
-- **Type:** Most often Server Components as they simply display passed data.
+- **Examples:** `<TicketCard ticket={...} />`, `<UserAvatar user={...} />`
+- **Type:** React components that display business entity data, often with minimal state.
 
 #### 5. `shared`
 
-- **Location:** `/client/src/shared`
+- **Location:** `/src/shared`
 - **Responsibilities:** Reusable code unrelated to business logic.
 - **Subdirectories:**
-  - `ui/`: UI kit (e.g., `<Button />`, `<Input />`, `<Spinner />`). Often Client Components.
-  - `lib/`: Helper functions and utilities (e.g., `formatDate`)
-  - `api/`: Functions for API interaction (in our case, `lib/flags.ts` will be here)
-  - `config/`: Configuration files
+  - `ui/`: UI kit (e.g., `<Button />`, `<Input />`, `<Card />`, `<Modal />`). Reusable React components.
+  - `lib/`: Helper functions and utilities (e.g., `formatDate`, `utils.ts`)
+  - `api/`: Functions for API interaction (e.g., `ticketApi.ts`)
+  - `mock/`: Mock API implementation for development (e.g., `mockData.ts`, `mockApiPlugin.ts`)
+  - `styles/`: Global styles, design tokens, CSS files
 - **Rules:** This layer should not depend on any of the upper layers.
