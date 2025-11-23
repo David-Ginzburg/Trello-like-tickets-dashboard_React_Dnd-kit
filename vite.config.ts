@@ -5,7 +5,13 @@ import { mockApiPlugin } from "./src/shared/mock/mockApiPlugin";
 // Get repository name from environment or use default
 // For GitHub Pages, base should be "/repository-name/" or "/" for user/organization pages
 const getBasePath = () => {
-	if (process.env.GITHUB_PAGES) {
+	// Check for explicit base URL from environment (highest priority)
+	if (process.env.VITE_BASE_URL) {
+		return process.env.VITE_BASE_URL;
+	}
+
+	// Check for GitHub Pages environment
+	if (process.env.GITHUB_PAGES || process.env.CI) {
 		// If GITHUB_REPOSITORY is available, use it to construct base path
 		const repo = process.env.GITHUB_REPOSITORY;
 		if (repo) {

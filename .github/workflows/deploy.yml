@@ -36,6 +36,7 @@ jobs:
         env:
           GITHUB_PAGES: true
           GITHUB_REPOSITORY: ${{ github.repository }}
+          VITE_BASE_URL: /${{ github.event.repository.name }}/
         run: npm run build
 
       - name: Create .nojekyll file
@@ -57,4 +58,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
