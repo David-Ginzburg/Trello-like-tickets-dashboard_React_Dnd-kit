@@ -1,3 +1,8 @@
+import { useDroppable } from "@dnd-kit/core";
+import {
+	SortableContext,
+	verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { TicketCard } from "../../entities/ticket/ui/TicketCard";
 import type { Ticket, TicketStatus } from "../../entities/ticket/model/types";
 import { TICKET_STATUSES } from "../../shared/config/constants";
@@ -15,11 +20,14 @@ export const TicketColumn = ({
 	onTicketClick,
 }: TicketColumnProps) => {
 	const statusConfig = TICKET_STATUSES[status];
+	const { setNodeRef, isOver } = useDroppable({
+		id: status,
+	});
 
 	return (
-		<div className="ticket-column">
+		<div className="ticket-column" ref={setNodeRef}>
 			<div
-				className="ticket-column__header"
+				className={`ticket-column__header ${isOver ? "ticket-column__header--over" : ""}`}
 				style={{
 					borderTopColor: statusConfig.color,
 				}}
@@ -27,20 +35,28 @@ export const TicketColumn = ({
 				<h2 className="ticket-column__title">{statusConfig.label}</h2>
 				<span className="ticket-column__count">{tickets.length}</span>
 			</div>
-			<div className="ticket-column__content">
-				{tickets.length === 0 ? (
-					<div className="ticket-column__empty">No tickets</div>
-				) : (
-					tickets.map((ticket) => (
-						<TicketCard
-							key={ticket.id}
-							ticket={ticket}
-							onClick={() => onTicketClick?.(ticket)}
-						/>
-					))
-				)}
-			</div>
+			<SortableContext
+				items={tickets.map((ticket) => ticket.id)}
+				strategy={verticalListSortingStrategy}
+			>
+				<div
+					className={`ticket-column__content ${isOver ? "ticket-column__content--over" : ""}`}
+				>
+					{tickets.length === 0 ? (
+						<div className="ticket-column__empty">
+							{isOver ? "Drop here" : "No tickets"}
+						</div>
+					) : (
+						tickets.map((ticket) => (
+							<TicketCard
+								key={ticket.id}
+								ticket={ticket}
+								onClick={() => onTicketClick?.(ticket)}
+							/>
+						))
+					)}
+				</div>
+			</SortableContext>
 		</div>
 	);
 };
-

@@ -1,6 +1,17 @@
 .ticket-card {
 	padding: var(--spacing-md);
 	margin-bottom: var(--spacing-md);
+	cursor: grab;
+}
+
+.ticket-card:active {
+	cursor: grabbing;
+}
+
+.ticket-card--dragging {
+	cursor: grabbing;
+	box-shadow: var(--shadow-lg);
+	transform: rotate(2deg);
 }
 
 .ticket-card__header {
@@ -48,4 +59,3 @@
 	font-size: var(--font-size-xs);
 	color: var(--color-text-tertiary);
 }
-

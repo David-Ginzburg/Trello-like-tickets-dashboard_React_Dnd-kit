@@ -16,6 +16,12 @@
 	background-color: var(--color-bg-primary);
 	border-top: 3px solid;
 	border-bottom: 1px solid var(--color-border);
+	transition: all var(--transition-base);
+}
+
+.ticket-column__header--over {
+	background-color: var(--color-bg-tertiary);
+	box-shadow: inset 0 0 0 2px var(--color-primary);
 }
 
 .ticket-column__title {
@@ -43,6 +49,14 @@
 	flex: 1;
 	padding: var(--spacing-md);
 	overflow-y: auto;
+	transition: all var(--transition-base);
+	min-height: 100px;
+}
+
+.ticket-column__content--over {
+	background-color: var(--color-bg-tertiary);
+	border: 2px dashed var(--color-primary);
+	border-radius: var(--radius-md);
 }
 
 .ticket-column__empty {
@@ -51,4 +65,3 @@
 	color: var(--color-text-tertiary);
 	font-size: var(--font-size-sm);
 }
-
