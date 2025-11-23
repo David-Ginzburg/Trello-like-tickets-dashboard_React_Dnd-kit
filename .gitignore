@@ -23,9 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Cursor AI
-.cursor/
-
 # Environment variables
 .env
 .env.local
