@@ -48,8 +48,8 @@ export const useDragAndDrop = ({
 	const collisionDetectionStrategy: CollisionDetection = useCallback(
 		(args) => {
 			if (activeId) {
-				// Используем clonedTickets для получения исходного статуса карточки
-				// Это важно, так как tickets может содержать временно измененный статус
+				// Use clonedTickets to get the original ticket status
+				// This is important because tickets may contain temporarily modified status
 				const originalTicket = clonedTickets?.find((t) => t.id === activeId);
 				if (originalTicket) {
 					// Start by finding any intersecting droppable
@@ -65,13 +65,13 @@ export const useDragAndDrop = ({
 							overId === "pending_approval" ||
 							overId === "escalated"
 						) {
-							// Для карточек не из pending_approval разрешаем только свою колонку
-							// Используем originalTicket.status вместо activeTicket.status
+							// For non-pending_approval tickets, only allow their own column
+							// Use originalTicket.status instead of activeTicket.status
 							if (
 								originalTicket.status !== "pending_approval" &&
 								overId !== originalTicket.status
 							) {
-								// Не разрешаем перемещение в другую колонку
+								// Don't allow moving to another column
 								return lastOverId.current ? [{ id: lastOverId.current }] : [];
 							}
 							lastOverId.current = overId;
@@ -79,17 +79,17 @@ export const useDragAndDrop = ({
 						}
 
 						// Check if it's a ticket - return it directly
-						// Используем clonedTickets для определения статуса карточки, над которой наводим
+						// Use clonedTickets to determine the status of the card we're hovering over
 						const overTicket =
 							clonedTickets?.find((t) => t.id === overId) || tickets.find((t) => t.id === overId);
 						if (overTicket) {
-							// Для карточек не из pending_approval разрешаем только свою колонку
-							// Используем originalTicket.status вместо activeTicket.status
+							// For non-pending_approval tickets, only allow their own column
+							// Use originalTicket.status instead of activeTicket.status
 							if (
 								originalTicket.status !== "pending_approval" &&
 								overTicket.status !== originalTicket.status
 							) {
-								// Не разрешаем перемещение в другую колонку
+								// Don't allow moving to another column
 								return lastOverId.current ? [{ id: lastOverId.current }] : [];
 							}
 							lastOverId.current = overId;
@@ -116,7 +116,7 @@ export const useDragAndDrop = ({
 	const handleDragStart = (event: DragStartEvent) => {
 		const ticketId = event.active.id as string;
 		setActiveId(ticketId);
-		// Сохраняем исходное состояние для отката при отмене
+		// Save original state for rollback on cancel
 		setClonedTickets([...tickets]);
 		recentlyMovedToNewContainer.current = false;
 		lastOverId.current = null;
@@ -141,14 +141,14 @@ export const useDragAndDrop = ({
 
 		const activeId = active.id as string;
 
-		// Игнорируем случай, когда перетаскиваем карточку над собой
+		// Ignore case when dragging card over itself
 		if (overId === activeId) {
 			return;
 		}
 
-		// ВСЕГДА используем clonedTickets для получения исходного статуса
-		// Это критически важно, так как tickets может содержать временно измененный статус
-		// Если clonedTickets не установлен, значит перетаскивание еще не началось или уже закончилось
+		// ALWAYS use clonedTickets to get the original status
+		// This is critical because tickets may contain temporarily modified status
+		// If clonedTickets is not set, dragging hasn't started yet or has already ended
 		if (!clonedTickets) {
 			return;
 		}
@@ -158,83 +158,68 @@ export const useDragAndDrop = ({
 			return;
 		}
 
-		// Сохраняем исходный статус карточки (до временных изменений)
+		// Save original ticket status (before temporary changes)
 		const originalStatus = originalTicket.status;
 
-		// Определяем целевой контейнер
+		// Determine target container
 		let overContainer: TicketStatus | null = null;
-		console.log("handleDragOver - overId:", overId, "originalStatus:", originalStatus);
 		if (overId === "ai_resolved" || overId === "pending_approval" || overId === "escalated") {
 			overContainer = overId as TicketStatus;
-			console.log("handleDragOver - overContainer from column ID:", overContainer);
 		} else {
-			// Если перетаскиваем над карточкой, находим родительскую колонку через DOM
+			// If dragging over a card, find parent column via DOM
 			const overCardElement = document.querySelector(`[data-testid="ticket-card-${overId}"]`);
 
 			if (overCardElement) {
-				// Ищем ближайший родительский элемент с data-status (колонка)
+				// Find closest parent element with data-status (column)
 				const columnElement = overCardElement.closest("[data-status]");
 				if (columnElement) {
 					const status = columnElement.getAttribute("data-status") as TicketStatus;
 					if (status === "ai_resolved" || status === "pending_approval" || status === "escalated") {
 						overContainer = status;
-						console.log("handleDragOver - overContainer from DOM:", overContainer);
 					}
 				}
 			}
 
-			// Если не нашли через DOM, используем clonedTickets для определения статуса
-			// Это важно, так как tickets может содержать временно измененные карточки
+			// If not found via DOM, use clonedTickets to determine status
+			// This is important because tickets may contain temporarily modified cards
 			if (!overContainer) {
 				const overTicket = clonedTickets.find((t) => t.id === overId);
 				if (overTicket) {
 					overContainer = overTicket.status;
-					console.log("handleDragOver - overContainer from clonedTickets:", overContainer);
 				}
 			}
 		}
 
 		if (!overContainer) {
-			console.log("handleDragOver - overContainer not found, resetting target");
-			// Если не можем определить колонку, сбрасываем сохраненные значения
-			// Это происходит когда выводим карточку из области колонки
+			// If we can't determine the column, reset saved values
+			// This happens when we drag the card out of the column area
 			lastTargetIndex.current = null;
 			lastTargetContainer.current = null;
 			return;
 		}
 
-		console.log(
-			"handleDragOver - overContainer:",
-			overContainer,
-			"originalStatus:",
-			originalStatus
-		);
-
-		// Если карточка не из pending_approval, разрешаем только пересортировку внутри своей колонки
+		// If card is not from pending_approval, only allow reordering within its own column
 		if (originalStatus !== "pending_approval") {
-			// Проверяем, что перетаскиваем внутри той же колонки
+			// Check that we're dragging within the same column
 			if (overContainer !== originalStatus) {
-				console.log("handleDragOver - not pending_approval and different container, returning");
 				return;
 			}
 		}
 
-		// Если перетаскиваем между колонками (для pending_approval) или внутри колонки
-		// Используем originalStatus вместо activeContainer, так как activeContainer может измениться после обновления состояния
+		// If dragging between columns (for pending_approval) or within column
+		// Use originalStatus instead of activeContainer, as activeContainer may change after state update
 		if (originalStatus !== overContainer) {
-			// Разрешаем перемещение между колонками только для pending_approval
+			// Only allow moving between columns for pending_approval
 			if (originalStatus !== "pending_approval") {
-				console.log("handleDragOver - not pending_approval, returning");
 				return;
 			}
-			console.log("handleDragOver - moving between columns:", originalStatus, "->", overContainer);
 
-			// ВСЕГДА используем clonedTickets для получения исходного состояния
-			// Это гарантирует, что мы работаем с исходным состоянием, а не с временно измененным
+			// ALWAYS use clonedTickets to get the original state
+			// This guarantees we work with original state, not temporarily modified one
 			const sourceTickets = clonedTickets;
 
-			// Обновляем состояние напрямую, как в примере MultipleContainers
-			// Используем originalStatus для фильтрации исходной колонки
+			// Update state directly, as in MultipleContainers example
+			// Use originalStatus to filter the source column
 			const activeItems = sourceTickets.filter(
 				(t) => t.status === originalStatus && t.id !== activeId
 			);
@@ -242,7 +227,7 @@ export const useDragAndDrop = ({
 				(t) => t.status === overContainer && t.id !== activeId
 			);
 
-			// Определяем индекс вставки
+			// Determine insert index
 			let newIndex: number;
 
 			if (
@@ -251,15 +236,14 @@ export const useDragAndDrop = ({
 				overId === "pending_approval" ||
 				overId === "escalated"
 			) {
-				// Если перетаскиваем над колонкой, вставляем в конец
+				// If dragging over column, insert at the end
 				newIndex = overItems.length;
-				console.log("handleDragOver - dragging over column, newIndex:", newIndex);
 			} else {
-				// Если перетаскиваем над карточкой, определяем позицию
+				// If dragging over a card, determine position
 				const overIndex = overItems.findIndex((t) => t.id === overId);
 
 				if (overIndex >= 0) {
-					// Определяем, ниже или выше курсор относительно карточки
+					// Determine if cursor is below or above the card
 					const isBelowOverItem =
 						over &&
 						active.rect.current.translated &&
@@ -267,44 +251,28 @@ export const useDragAndDrop = ({
 
 					const modifier = isBelowOverItem ? 1 : 0;
 					newIndex = overIndex + modifier;
-					console.log("handleDragOver - dragging over card:", {
-						overId,
-						overIndex,
-						isBelowOverItem,
-						modifier,
-						newIndex,
-						overItemsLength: overItems.length,
-					});
 				} else {
 					newIndex = overItems.length;
-					console.log("handleDragOver - card not found in overItems, using end:", newIndex);
 				}
 			}
 
 			recentlyMovedToNewContainer.current = true;
 
-			// Проверяем, изменилась ли целевая колонка ДО обновления lastTargetContainer
-			// Это важно для правильного определения containerChanged
+			// Check if target column changed BEFORE updating lastTargetContainer
+			// This is important for correct containerChanged determination
 			const previousContainer = lastTargetContainer.current;
 			const containerChanged = previousContainer !== overContainer;
 
-			console.log("handleDragOver - container check:", {
-				previousContainer,
-				overContainer,
-				containerChanged,
-				originalStatus,
-			});
-
-			// ВСЕГДА формируем новый порядок для визуального эффекта
+			// ALWAYS form new order for visual effect
 			const statusOrder: TicketStatus[] = ["ai_resolved", "pending_approval", "escalated"];
 			const reorderedTickets: Ticket[] = [];
 
 			for (const status of statusOrder) {
 				if (status === originalStatus) {
-					// Удаляем активную карточку из исходной колонки
+					// Remove active card from source column
 					reorderedTickets.push(...activeItems);
 				} else if (status === overContainer) {
-					// Временно добавляем активную карточку в целевую колонку с новым статусом
+					// Temporarily add active card to target column with new status
 					const tempTicket: Ticket = {
 						...originalTicket,
 						status: overContainer,
@@ -316,7 +284,7 @@ export const useDragAndDrop = ({
 					];
 					reorderedTickets.push(...newOverItems);
 				} else {
-					// Используем sourceTickets для получения исходного состояния других колонок
+					// Use sourceTickets to get original state of other columns
 					const columnTickets = sourceTickets.filter((t) => t.status === status);
 					reorderedTickets.push(...columnTickets);
 				}
@@ -324,43 +292,33 @@ export const useDragAndDrop = ({
 
 			const reorderedTicketIds = reorderedTickets.map((t) => t.id);
 
-			// Обновляем состояние если изменилась целевая колонка
-			// Это критически важно для возможности перетаскивания между разными колонками
+			// Update state if target column changed
+			// This is critical for enabling dragging between different columns
 			if (containerChanged) {
-				console.log("handleDragOver - UPDATING STATE (container changed):", {
-					previousContainer,
-					newContainer: overContainer,
-					reorderedTicketIds: reorderedTicketIds.slice(0, 5) + "...",
-				});
-				// Обновляем сохраненные значения ПОСЛЕ проверки containerChanged
+				// Update saved values AFTER checking containerChanged
 				lastTargetIndex.current = newIndex;
 				lastTargetContainer.current = overContainer;
 				lastReorderedIds.current = reorderedTicketIds;
 				onTicketsReorder(reorderedTicketIds, reorderedTickets);
 			} else {
-				// Если колонка не изменилась, проверяем изменился ли индекс
-				// Обновляем состояние только если индекс действительно изменился
+				// If column didn't change, check if index changed
+				// Update state only if index actually changed
 				const indexChanged = lastTargetIndex.current !== newIndex;
 
 				if (indexChanged) {
-					console.log("handleDragOver - updating state (index changed within same container):", {
-						overContainer,
-						previousIndex: lastTargetIndex.current,
-						newIndex,
-					});
 					lastTargetIndex.current = newIndex;
 					lastTargetContainer.current = overContainer;
 					lastReorderedIds.current = reorderedTicketIds;
 					onTicketsReorder(reorderedTicketIds, reorderedTickets);
 				} else {
-					// Индекс не изменился, просто обновляем отслеживание позиции
+					// Index didn't change, just update position tracking
 					lastTargetIndex.current = newIndex;
 					lastTargetContainer.current = overContainer;
 				}
 			}
 		}
-		// Для пересортировки внутри той же колонки useSortable сам обрабатывает визуальное перемещение
-		// через transform, поэтому не нужно обновлять состояние в handleDragOver
+		// For reordering within the same column, useSortable handles visual movement
+		// via transform, so we don't need to update state in handleDragOver
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {
@@ -370,10 +328,10 @@ export const useDragAndDrop = ({
 		const overId = over?.id as string | null;
 
 		if (overId == null) {
-			// Если отменили перетаскивание, восстанавливаем исходное состояние
+			// If drag was cancelled, restore original state
 			if (clonedTickets) {
 				const clonedTicketIds = clonedTickets.map((t) => t.id);
-				// Передаем исходные тикеты для восстановления исходного состояния без вызова API
+				// Pass original tickets to restore original state without API call
 				onTicketsReorder(clonedTicketIds, clonedTickets);
 			}
 			setActiveId(null);
@@ -384,8 +342,8 @@ export const useDragAndDrop = ({
 			return;
 		}
 
-		// Используем исходный статус карточки из clonedTickets, если он есть
-		// Это важно, так как handleDragOver мог временно изменить статус для визуального эффекта
+		// Use original ticket status from clonedTickets if available
+		// This is important because handleDragOver may have temporarily changed status for visual effect
 		const originalTicket =
 			clonedTickets?.find((t) => t.id === activeId) || tickets.find((t) => t.id === activeId);
 		if (!originalTicket) {
@@ -395,23 +353,23 @@ export const useDragAndDrop = ({
 			return;
 		}
 
-		// Используем исходный статус для определения исходной колонки
+		// Use original status to determine source column
 		const activeContainer = originalTicket.status;
 
-		// Определяем целевой контейнер
+		// Determine target container
 		let overContainer: TicketStatus | null = null;
 
 		if (overId === "ai_resolved" || overId === "pending_approval" || overId === "escalated") {
-			// Если перетаскиваем над колонкой напрямую
+			// If dragging over column directly
 			overContainer = overId as TicketStatus;
 		} else {
-			// Если перетаскиваем над карточкой, нужно найти родительскую колонку
-			// Используем event.over для получения информации о коллизии
-			// Ищем элемент карточки через data-testid или по ID
+			// If dragging over a card, need to find parent column
+			// Use event.over to get collision information
+			// Find card element via data-testid or by ID
 			const overCardElement = document.querySelector(`[data-testid="ticket-card-${overId}"]`);
 
 			if (overCardElement) {
-				// Ищем ближайший родительский элемент с data-status (колонка)
+				// Find closest parent element with data-status (column)
 				const columnElement = overCardElement.closest("[data-status]");
 				if (columnElement) {
 					const status = columnElement.getAttribute("data-status") as TicketStatus;
@@ -421,15 +379,15 @@ export const useDragAndDrop = ({
 				}
 			}
 
-			// Если не нашли через DOM, используем исходные тикеты как fallback
-			// Но это может быть неправильно, если карточка была временно перемещена
+			// If not found via DOM, use original tickets as fallback
+			// But this may be incorrect if card was temporarily moved
 			if (!overContainer) {
 				const overTicket = clonedTickets?.find((t) => t.id === overId);
 				if (overTicket) {
-					// Используем исходный статус карточки из clonedTickets
+					// Use original ticket status from clonedTickets
 					overContainer = overTicket.status;
 				} else {
-					// Если не нашли в clonedTickets, ищем в текущих тикетах
+					// If not found in clonedTickets, search in current tickets
 					const currentOverTicket = tickets.find((t) => t.id === overId);
 					if (currentOverTicket) {
 						overContainer = currentOverTicket.status;
@@ -438,21 +396,11 @@ export const useDragAndDrop = ({
 			}
 		}
 
-		console.log(
-			"handleDragEnd - overContainer:",
-			overContainer,
-			"activeContainer:",
-			activeContainer,
-			"originalTicket.status:",
-			originalTicket.status
-		);
-
 		if (!overContainer) {
-			// Если не можем определить колонку, возвращаем карточку в исходную колонку
-			console.log("handleDragEnd - overContainer not found, returning to original container");
+			// If we can't determine the column, return card to source column
 			if (clonedTickets) {
 				const clonedTicketIds = clonedTickets.map((t) => t.id);
-				// Передаем исходные тикеты для восстановления исходного состояния без вызова API
+				// Pass original tickets to restore original state without API call
 				onTicketsReorder(clonedTicketIds, clonedTickets);
 			}
 			setActiveId(null);
@@ -463,17 +411,14 @@ export const useDragAndDrop = ({
 			return;
 		}
 
-		// Если отпускаем карточку в исходной колонке после того, как наводили на другую колонку
-		// Нужно просто восстановить исходное состояние без вызова API
+		// If we drop card in source column after hovering over another column
+		// Just restore original state without API call
 		if (overContainer === activeContainer) {
-			// Если мы наводили на другую колонку, но вернулись в исходную, просто восстанавливаем состояние
+			// If we hovered over another column but returned to source, just restore state
 			if (lastTargetContainer.current !== null && lastTargetContainer.current !== activeContainer) {
-				console.log(
-					"handleDragEnd - returned to original container after hovering over another, restoring state"
-				);
 				if (clonedTickets) {
 					const clonedTicketIds = clonedTickets.map((t) => t.id);
-					// Передаем исходные тикеты для восстановления исходного состояния без вызова API
+					// Pass original tickets to restore original state without API call
 					onTicketsReorder(clonedTicketIds, clonedTickets);
 				}
 				setActiveId(null);
@@ -483,15 +428,15 @@ export const useDragAndDrop = ({
 				lastTargetContainer.current = null;
 				return;
 			}
-			// Карточка остается в исходной колонке, сбрасываем сохраненные значения
+			// Card stays in source column, reset saved values
 			lastReorderedIds.current = null;
 			lastTargetIndex.current = null;
 			lastTargetContainer.current = null;
 		}
 
-		// Если карточка не из pending_approval, разрешаем только пересортировку внутри своей колонки
+		// If card is not from pending_approval, only allow reordering within its own column
 		if (originalTicket.status !== "pending_approval") {
-			// Проверяем, что перетаскиваем внутри той же колонки
+			// Check that we're dragging within the same column
 			if (overContainer !== activeContainer) {
 				setActiveId(null);
 				setClonedTickets(null);
@@ -499,26 +444,26 @@ export const useDragAndDrop = ({
 			}
 		}
 
-		// Получаем карточки колонок из исходного состояния (до временных изменений в handleDragOver)
+		// Get column cards from original state (before temporary changes in handleDragOver)
 		const sourceTickets = clonedTickets || tickets;
 		const activeItems = sourceTickets.filter((t) => t.status === activeContainer);
 
 		const activeIndex = activeItems.findIndex((t) => t.id === activeId);
 
-		// Если перемещаем внутри той же колонки
+		// If moving within the same column
 		if (activeContainer === overContainer) {
-			// Определяем индекс целевой позиции
+			// Determine target position index
 			let overIndex = -1;
 
 			if (overId === overContainer) {
-				// Если перетаскиваем над колонкой, вставляем в конец
+				// If dragging over column, insert at the end
 				overIndex = activeItems.length;
 			} else {
-				// Если перетаскиваем над карточкой, определяем её индекс
-				// Используем activeItems, так как мы внутри той же колонки
+				// If dragging over a card, determine its index
+				// Use activeItems since we're within the same column
 				overIndex = activeItems.findIndex((t) => t.id === overId);
 
-				// Если нашли карточку, определяем позицию с учетом курсора
+				// If found card, determine position considering cursor
 				if (overIndex !== -1) {
 					const isBelowOverItem =
 						over &&
@@ -528,20 +473,20 @@ export const useDragAndDrop = ({
 					const modifier = isBelowOverItem ? 1 : 0;
 					overIndex = overIndex + modifier;
 				} else {
-					// Если не нашли, вставляем в конец
+					// If not found, insert at the end
 					overIndex = activeItems.length;
 				}
 			}
 
-			// Проверяем, что индексы валидны и разные
+			// Check that indices are valid and different
 			if (overIndex !== -1 && activeIndex !== overIndex && overIndex >= 0 && activeIndex >= 0) {
-				// Переупорядочиваем карточки в колонке используя arrayMove
-				// overIndex может быть больше длины массива (если перетаскиваем в конец)
-				// arrayMove работает с индексами в массиве, поэтому ограничиваем максимальным индексом
+				// Reorder cards in column using arrayMove
+				// overIndex may be greater than array length (if dragging to end)
+				// arrayMove works with array indices, so limit to maximum index
 				const targetIndex = Math.min(overIndex, activeItems.length - 1);
 				const reorderedSourceTickets = arrayMove(activeItems, activeIndex, targetIndex);
 
-				// Обновляем порядок всех тикетов, сохраняя порядок внутри каждой колонки
+				// Update order of all tickets, preserving order within each column
 				const statusOrder: TicketStatus[] = ["ai_resolved", "pending_approval", "escalated"];
 				const reorderedTickets: Ticket[] = [];
 
@@ -557,7 +502,7 @@ export const useDragAndDrop = ({
 				const reorderedTicketIds = reorderedTickets.map((t) => t.id);
 				onTicketsReorder(reorderedTicketIds);
 
-				// Сохраняем порядок на бэкенде
+				// Save order to backend
 				try {
 					await ticketApi.reorderTickets(reorderedTicketIds);
 				} catch (error) {
@@ -569,22 +514,15 @@ export const useDragAndDrop = ({
 			return;
 		}
 
-		// Если перемещаем в другую колонку (только для pending_approval)
+		// If moving to another column (only for pending_approval)
 		if (originalTicket.status === "pending_approval" && activeContainer !== overContainer) {
-			// Проверяем, что мы действительно над целевой колонкой
-			// Если lastTargetContainer не установлен или не соответствует overContainer, возвращаем в исходную колонку
-			// Это означает, что мы вышли из области колонки или не были над ней
+			// Check that we're really over target column
+			// If lastTargetContainer is not set or doesn't match overContainer, return to source column
+			// This means we left column area or weren't over it
 			if (lastTargetContainer.current === null || lastTargetContainer.current !== overContainer) {
-				console.log(
-					"handleDragEnd - not over target container (lastTargetContainer:",
-					lastTargetContainer.current,
-					", overContainer:",
-					overContainer,
-					"), returning to original"
-				);
 				if (clonedTickets) {
 					const clonedTicketIds = clonedTickets.map((t) => t.id);
-					// Передаем исходные тикеты для восстановления исходного состояния без вызова API
+					// Pass original tickets to restore original state without API call
 					onTicketsReorder(clonedTicketIds, clonedTickets);
 				}
 				setActiveId(null);
@@ -595,23 +533,15 @@ export const useDragAndDrop = ({
 				return;
 			}
 
-			console.log("Moving ticket between columns:", {
-				activeId,
-				activeContainer,
-				overContainer,
-				overId,
-			});
-
-			// Используем индекс из handleDragOver, если он есть и соответствует текущей целевой колонке
+			// Use index from handleDragOver if available and matches current target column
 			let finalInsertIndex: number;
 
 			if (lastTargetIndex.current !== null && lastTargetContainer.current === overContainer) {
-				// Используем сохраненный индекс из handleDragOver
+				// Use saved index from handleDragOver
 				finalInsertIndex = lastTargetIndex.current;
-				console.log("Using saved index from handleDragOver:", finalInsertIndex);
 			} else {
-				// Если индекс не сохранен, вычисляем его заново
-				// Получаем карточки целевой колонки из исходного состояния
+				// If index not saved, calculate it again
+				// Get target column cards from original state
 				const overItems = sourceTickets.filter(
 					(t) => t.status === overContainer && t.id !== activeId
 				);
@@ -630,10 +560,9 @@ export const useDragAndDrop = ({
 						finalInsertIndex = overIndexInTarget + modifier;
 					}
 				}
-				console.log("Calculated index:", finalInsertIndex);
 			}
 
-			// Оптимистичное обновление UI
+			// Optimistic UI update
 			const optimisticTicket: Ticket = {
 				...originalTicket,
 				status: overContainer,
@@ -646,19 +575,19 @@ export const useDragAndDrop = ({
 			}
 
 			try {
-				// Используем единую ручку для перемещения карточки в другую колонку
-				// Она обновит статус и вставит карточку в правильную позицию
+				// Use unified handler to move card to another column
+				// It will update status and insert card at correct position
 				const updatedTickets = await ticketApi.moveTicketToColumn(
 					activeId,
 					overContainer,
 					finalInsertIndex
 				);
 
-				// Обновляем локальное состояние с результатом от сервера
+				// Update local state with server result
 				const reorderedTicketIds = updatedTickets.map((t) => t.id);
 				onTicketsReorder(reorderedTicketIds, updatedTickets);
 
-				// Обновляем перемещенную карточку
+				// Update moved ticket
 				const movedTicket = updatedTickets.find((t) => t.id === activeId);
 				if (movedTicket) {
 					onTicketUpdate(movedTicket);
@@ -668,7 +597,7 @@ export const useDragAndDrop = ({
 				}
 			} catch (error) {
 				console.error("Failed to move ticket:", error);
-				// Откатываем изменения при ошибке
+				// Rollback changes on error
 				onTicketUpdate(originalTicket);
 				if (selectedTicket?.id === activeId) {
 					onSelectedTicketUpdate(originalTicket);
@@ -684,10 +613,10 @@ export const useDragAndDrop = ({
 	};
 
 	const handleDragCancel = () => {
-		// Восстанавливаем исходное состояние при отмене перетаскивания
+		// Restore original state on drag cancel
 		if (clonedTickets) {
 			const clonedTicketIds = clonedTickets.map((t) => t.id);
-			// Передаем исходные тикеты для восстановления исходного состояния без вызова API
+			// Pass original tickets to restore original state without API call
 			onTicketsReorder(clonedTicketIds, clonedTickets);
 		}
 		setActiveId(null);

@@ -34,16 +34,16 @@ export const useTickets = () => {
 
 	const reorderTickets = (ticketIds: string[], updatedTickets?: Ticket[]) => {
 		setTickets((prevTickets) => {
-			// Если переданы обновленные тикеты, используем их напрямую
-			// Это позволяет временно изменять статусы карточек для визуального эффекта
+			// If updated tickets are provided, use them directly
+			// This allows temporarily changing ticket statuses for visual effect
 			if (updatedTickets && updatedTickets.length > 0) {
-				// Создаем карту из обновленных тикетов
+				// Create map from updated tickets
 				const updatedMap = new Map(updatedTickets.map((ticket) => [ticket.id, ticket]));
-				// Используем обновленные тикеты в правильном порядке
+				// Use updated tickets in correct order
 				return ticketIds.map((id) => updatedMap.get(id)).filter(Boolean) as Ticket[];
 			}
 			
-			// Иначе просто переупорядочиваем существующие тикеты
+			// Otherwise just reorder existing tickets
 			const ticketMap = new Map(prevTickets.map((ticket) => [ticket.id, ticket]));
 			return ticketIds.map((id) => ticketMap.get(id)).filter(Boolean) as Ticket[];
 		});

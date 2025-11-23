@@ -44,7 +44,7 @@ export const TicketColumn = ({ status, tickets, onTicketClick, activeId }: Ticke
 						<div className="ticket-column__empty">{isOver ? "Drop here" : "No tickets"}</div>
 					) : (
 						safeTickets.map((ticket) => {
-							// Скрываем перетаскиваемую карточку, она показывается в DragOverlay
+							// Hide dragged card, it's shown in DragOverlay
 							if (ticket.id === activeId) {
 								return (
 									<div

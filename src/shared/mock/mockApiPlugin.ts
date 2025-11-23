@@ -69,7 +69,7 @@ export function mockApiPlugin(): Plugin {
 				// Handle POST /api/tickets/:id/move - Move ticket to another column with specific index
 				if (req.method === "POST" && req.url?.includes("/move")) {
 					const urlParts = req.url.split("/");
-					const ticketId = urlParts[urlParts.length - 2]; // Предпоследний элемент (перед "move")
+					const ticketId = urlParts[urlParts.length - 2]; // Second to last element (before "move")
 					let body = "";
 
 					req.on("data", (chunk) => {
@@ -98,41 +98,41 @@ export function mockApiPlugin(): Plugin {
 							const ticket = allTickets[ticketIndex];
 							const oldStatus = ticket.status;
 
-							// Обновляем статус карточки
+							// Update ticket status
 							const updatedTicket: Ticket = {
 								...ticket,
 								status: newStatus,
 							};
 
-							// Удаляем карточку из старой колонки
+							// Remove ticket from old column
 							const ticketsWithoutMoved = allTickets.filter((t) => t.id !== ticketId);
 
-							// Получаем карточки целевой колонки (без перемещаемой карточки)
+							// Get target column tickets (without moved ticket)
 							const targetColumnTickets = ticketsWithoutMoved.filter(
 								(t) => t.status === newStatus
 							);
 
-							// Вставляем карточку в правильную позицию
+							// Insert ticket at correct position
 							const newTargetColumnTickets = [
 								...targetColumnTickets.slice(0, targetIndex),
 								updatedTicket,
 								...targetColumnTickets.slice(targetIndex),
 							];
 
-							// Формируем финальный порядок всех тикетов
+							// Build final order of all tickets
 							const statusOrder: Ticket["status"][] = ["ai_resolved", "pending_approval", "escalated"];
 							const reorderedTickets: Ticket[] = [];
 
 							for (const status of statusOrder) {
 								if (status === oldStatus) {
-									// Старая колонка без перемещенной карточки
+									// Old column without moved ticket
 									const oldColumnTickets = ticketsWithoutMoved.filter((t) => t.status === status);
 									reorderedTickets.push(...oldColumnTickets);
 								} else if (status === newStatus) {
-									// Новая колонка с перемещенной карточкой в правильной позиции
+									// New column with moved ticket at correct position
 									reorderedTickets.push(...newTargetColumnTickets);
 								} else {
-									// Остальные колонки без изменений
+									// Other columns unchanged
 									const columnTickets = ticketsWithoutMoved.filter((t) => t.status === status);
 									reorderedTickets.push(...columnTickets);
 								}
