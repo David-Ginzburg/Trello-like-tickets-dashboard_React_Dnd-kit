@@ -2,8 +2,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Ticket } from "../types";
 
-export const useTicketCardDrag = (ticket: Ticket) => {
-	const isDraggable = true;
+export const useTicketCardDrag = (ticket: Ticket, isDragDisabled: boolean = false) => {
+	const isDraggable = !isDragDisabled;
 
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging, over } =
 		useSortable({

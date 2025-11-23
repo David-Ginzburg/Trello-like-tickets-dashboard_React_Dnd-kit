@@ -9,6 +9,7 @@ import { useTicketFilter } from "./model/hooks/useTicketFilter";
 import { useTicketGrouping } from "./model/hooks/useTicketGrouping";
 import { useTicketModal } from "./model/hooks/useTicketModal";
 import { useDragAndDrop } from "./model/hooks/useDragAndDrop";
+import { useIsMobile } from "../../shared/lib/useIsMobile";
 import type { Ticket } from "../../entities/ticket/model/types";
 import { TICKET_STATUS_ORDER } from "../../entities/ticket/model/const/constants";
 import "./TicketBoard.css";
@@ -25,6 +26,7 @@ export const TicketBoard = () => {
 		updateSelectedTicket,
 	} = useTicketModal();
 
+	const isMobile = useIsMobile();
 	const filteredTickets = useTicketFilter(tickets, filter);
 	const ticketsByStatus = useTicketGrouping(filteredTickets);
 
@@ -43,6 +45,8 @@ export const TicketBoard = () => {
 		onTicketUpdate: updateTicket,
 		onSelectedTicketUpdate: updateSelectedTicket,
 		onTicketsReorder: reorderTickets,
+		filter,
+		isMobile,
 	});
 
 	const handleStatusChange = (updatedTicket: Ticket) => {
@@ -93,6 +97,7 @@ export const TicketBoard = () => {
 							onTicketClick={openModal}
 							activeId={activeId}
 							activeTicket={activeTicket}
+							isDragDisabled={filter.trim().length > 0 || isMobile}
 						/>
 					))}
 				</div>

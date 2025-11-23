@@ -9,11 +9,12 @@ import "./TicketCard.css";
 export interface TicketCardProps {
 	ticket: Ticket;
 	onClick?: () => void;
+	isDragDisabled?: boolean;
 }
 
-export const TicketCard = ({ ticket, onClick }: TicketCardProps) => {
+export const TicketCard = ({ ticket, onClick, isDragDisabled = false }: TicketCardProps) => {
 	const { isDraggable, attributes, listeners, setNodeRef, style, isDragging } =
-		useTicketCardDrag(ticket);
+		useTicketCardDrag(ticket, isDragDisabled);
 
 	const handleClick = useTicketCardClick(onClick, isDragging);
 

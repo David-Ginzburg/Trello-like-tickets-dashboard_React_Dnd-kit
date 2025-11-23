@@ -11,9 +11,10 @@ export interface TicketColumnProps {
 	onTicketClick?: (ticket: Ticket) => void;
 	activeId?: string | null;
 	activeTicket?: Ticket | null;
+	isDragDisabled?: boolean;
 }
 
-export const TicketColumn = ({ status, tickets, onTicketClick, activeId }: TicketColumnProps) => {
+export const TicketColumn = ({ status, tickets, onTicketClick, activeId, isDragDisabled }: TicketColumnProps) => {
 	const statusConfig = TICKET_STATUSES[status];
 	const { setNodeRef, isOver } = useDroppable({
 		id: status,
@@ -54,7 +55,7 @@ export const TicketColumn = ({ status, tickets, onTicketClick, activeId }: Ticke
 											pointerEvents: "none",
 										}}
 									>
-										<TicketCard ticket={ticket} />
+										<TicketCard ticket={ticket} isDragDisabled={true} />
 									</div>
 								);
 							}
@@ -63,6 +64,7 @@ export const TicketColumn = ({ status, tickets, onTicketClick, activeId }: Ticke
 									key={ticket.id}
 									ticket={ticket}
 									onClick={() => onTicketClick?.(ticket)}
+									isDragDisabled={isDragDisabled}
 								/>
 							);
 						})

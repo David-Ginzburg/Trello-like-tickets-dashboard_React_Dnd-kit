@@ -19,6 +19,8 @@ interface UseDragAndDropProps {
 	onTicketUpdate: (ticket: Ticket) => void;
 	onSelectedTicketUpdate: (ticket: Ticket) => void;
 	onTicketsReorder: (ticketIds: string[], updatedTickets?: Ticket[]) => void;
+	filter: string;
+	isMobile: boolean;
 }
 
 export const useDragAndDrop = ({
@@ -27,6 +29,8 @@ export const useDragAndDrop = ({
 	onTicketUpdate,
 	onSelectedTicketUpdate,
 	onTicketsReorder,
+	filter,
+	isMobile,
 }: UseDragAndDropProps) => {
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [clonedTickets, setClonedTickets] = useState<Ticket[] | null>(null);
@@ -36,11 +40,16 @@ export const useDragAndDrop = ({
 	const lastTargetIndex = useRef<number | null>(null);
 	const lastTargetContainer = useRef<TicketStatus | null>(null);
 
+	// Disable drag-and-drop when filter has any characters or on mobile devices
+	const isDragDisabled = filter.trim().length > 0 || isMobile;
+
 	const sensors = useSensors(
 		useSensor(PointerSensor, {
 			activationConstraint: {
 				distance: 10,
 			},
+			// Disable sensor when filter is active
+			disabled: isDragDisabled,
 		})
 	);
 
@@ -114,6 +123,11 @@ export const useDragAndDrop = ({
 	);
 
 	const handleDragStart = (event: DragStartEvent) => {
+		// Block drag start if filter is active
+		if (isDragDisabled) {
+			return;
+		}
+
 		const ticketId = event.active.id as string;
 		setActiveId(ticketId);
 		// Save original state for rollback on cancel
@@ -132,6 +146,11 @@ export const useDragAndDrop = ({
 	}, [tickets]);
 
 	const handleDragOver = (event: DragOverEvent) => {
+		// Block drag over if filter is active
+		if (isDragDisabled) {
+			return;
+		}
+
 		const { active, over } = event;
 
 		const overId = over?.id as string | null;
@@ -322,6 +341,13 @@ export const useDragAndDrop = ({
 	};
 
 	const handleDragEnd = async (event: DragEndEvent) => {
+		// Block drag end if filter is active
+		if (isDragDisabled) {
+			setActiveId(null);
+			setClonedTickets(null);
+			return;
+		}
+
 		const { active, over } = event;
 
 		const activeId = active.id as string;
