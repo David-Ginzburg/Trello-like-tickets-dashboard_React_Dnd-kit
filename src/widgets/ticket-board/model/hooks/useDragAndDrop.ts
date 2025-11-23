@@ -10,8 +10,10 @@ import {
 } from "@dnd-kit/core";
 import type { DragEndEvent, DragStartEvent, DragOverEvent } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { toast } from "react-toastify";
 import { ticketApi } from "../../../../shared/api/ticketApi";
 import type { Ticket, TicketStatus } from "../../../../entities/ticket/model/types";
+import { TICKET_STATUSES } from "../../../../entities/ticket/model/const/constants";
 
 interface UseDragAndDropProps {
 	tickets: Ticket[];
@@ -620,6 +622,10 @@ export const useDragAndDrop = ({
 					if (selectedTicket?.id === activeId) {
 						onSelectedTicketUpdate(movedTicket);
 					}
+
+					// Show success notification
+					const newStatusLabel = TICKET_STATUSES[overContainer].label;
+					toast.success(`Статус изменен на "${newStatusLabel}"`);
 				}
 			} catch (error) {
 				console.error("Failed to move ticket:", error);
@@ -628,6 +634,8 @@ export const useDragAndDrop = ({
 				if (selectedTicket?.id === activeId) {
 					onSelectedTicketUpdate(originalTicket);
 				}
+				// Show error notification
+				toast.error("Не удалось изменить статус карточки");
 			}
 		}
 

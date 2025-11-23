@@ -25,6 +25,14 @@ This ensures international collaboration and code maintainability.
 
 ## Recent Changes (2024)
 
+### Toast Notifications
+
+- **react-toastify integration**: Added toast notifications for user feedback
+- **Status change notifications**: Notifications appear when ticket status is changed via drag-and-drop or approve/reject buttons
+- **Mobile-friendly**: Toast notifications are optimized for mobile devices with responsive styling
+- **Position**: Notifications appear in the top-right corner on desktop, full-width with margins on mobile
+- **Error handling**: Error notifications shown when status change fails
+
 ### Documentation Updates
 
 - **Architecture documentation**: Updated to reflect Vite + React architecture instead of Next.js
@@ -395,6 +403,7 @@ src/
   - React Router configuration
   - Root App component that wraps the application
   - Route definitions
+  - Toast notifications container (react-toastify) for user feedback
 
 #### 2. Pages Layer (`/src/pages/`)
 
