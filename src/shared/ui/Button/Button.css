@@ -69,6 +69,7 @@
 .button--md {
 	padding: var(--spacing-sm) var(--spacing-md);
 	font-size: var(--font-size-base);
+	line-height: var(--line-height-normal);
 }
 
 .button--lg {

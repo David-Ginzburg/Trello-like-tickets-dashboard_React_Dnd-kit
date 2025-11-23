@@ -1,7 +1,7 @@
-import type { Ticket, TicketStatus } from "../../entities/ticket/model/types";
-import { STORAGE_KEY } from "../config/constants";
+import type { Ticket } from "../../entities/ticket/model/types";
 
-const generateMockTickets = (): Ticket[] => {
+// Mock data storage (in-memory)
+export const generateMockTickets = (): Ticket[] => {
 	const now = new Date();
 	return [
 		{
@@ -79,46 +79,29 @@ const generateMockTickets = (): Ticket[] => {
 	];
 };
 
-const getStoredTickets = (): Ticket[] | null => {
-	try {
-		const stored = localStorage.getItem(STORAGE_KEY);
-		if (stored) {
-			return JSON.parse(stored) as Ticket[];
-		}
-	} catch (error) {
-		console.error("Error reading tickets from localStorage:", error);
+export const getMockTickets = (): Ticket[] => {
+	// In server context, we can't access localStorage directly
+	// So we'll use in-memory storage that persists during dev server lifetime
+	// For production-like behavior, you'd want to use a proper database
+	if (typeof global !== "undefined" && !(global as any).mockTickets) {
+		(global as any).mockTickets = generateMockTickets();
 	}
-	return null;
+	return (global as any).mockTickets || generateMockTickets();
 };
 
-const saveTickets = (tickets: Ticket[]): void => {
-	try {
-		localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
-	} catch (error) {
-		console.error("Error saving tickets to localStorage:", error);
+export const resetMockTickets = (): void => {
+	// Reset mock tickets to initial state
+	if (typeof global !== "undefined") {
+		(global as any).mockTickets = generateMockTickets();
 	}
 };
 
-export const getTickets = async (): Promise<Ticket[]> => {
-	const stored = getStoredTickets();
-	if (stored && stored.length > 0) {
-		return stored;
-	}
-
-	const mockTickets = generateMockTickets();
-	saveTickets(mockTickets);
-	return mockTickets;
-};
-
-export const updateTicketStatus = async (
-	id: string,
-	status: TicketStatus,
-): Promise<Ticket> => {
-	const tickets = await getTickets();
+export const updateMockTicketStatus = (id: string, status: Ticket["status"]): Ticket | null => {
+	const tickets = getMockTickets();
 	const ticketIndex = tickets.findIndex((ticket) => ticket.id === id);
 
 	if (ticketIndex === -1) {
-		throw new Error(`Ticket with id ${id} not found`);
+		return null;
 	}
 
 	const updatedTicket: Ticket = {
@@ -127,8 +110,9 @@ export const updateTicketStatus = async (
 	};
 
 	tickets[ticketIndex] = updatedTicket;
-	saveTickets(tickets);
+	if (typeof global !== "undefined") {
+		(global as any).mockTickets = tickets;
+	}
 
 	return updatedTicket;
 };
-

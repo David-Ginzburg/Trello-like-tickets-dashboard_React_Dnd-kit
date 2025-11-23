@@ -1,4 +1,4 @@
-import type { TicketStatus } from "../../entities/ticket/model/types";
+import type { TicketStatus } from "../types";
 
 export const TICKET_STATUSES: Record<
 	TicketStatus,
@@ -21,11 +21,4 @@ export const TICKET_STATUSES: Record<
 	},
 };
 
-export const TICKET_STATUS_ORDER: TicketStatus[] = [
-	"ai_resolved",
-	"pending_approval",
-	"escalated",
-];
-
-export const STORAGE_KEY = "tickets_data";
-
+export const TICKET_STATUS_ORDER: TicketStatus[] = ["pending_approval", "ai_resolved", "escalated"];

@@ -6,6 +6,12 @@
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--color-border);
 	overflow: hidden;
+	transition: all var(--transition-base);
+}
+
+.ticket-column--over {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .ticket-column__header {
@@ -49,14 +55,7 @@
 	flex: 1;
 	padding: var(--spacing-md);
 	overflow-y: auto;
-	transition: all var(--transition-base);
 	min-height: 100px;
-}
-
-.ticket-column__content--over {
-	background-color: var(--color-bg-tertiary);
-	border: 2px dashed var(--color-primary);
-	border-radius: var(--radius-md);
 }
 
 .ticket-column__empty {

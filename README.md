@@ -22,6 +22,7 @@ A modern, responsive dashboard for managing customer support tickets with AI-pow
 - **Vite** - Build tool and dev server
 - **React Router** - Routing
 - **@dnd-kit** - Drag and drop functionality
+- **Playwright** - E2E testing
 - **Feature-Sliced Design** - Architecture methodology
 
 ## Project Structure
@@ -71,6 +72,23 @@ npm run build
 ```bash
 npm run preview
 ```
+
+### Testing
+
+Run end-to-end tests with Playwright:
+
+```bash
+# Run all tests
+npm run test:e2e
+
+# Run tests in UI mode (interactive)
+npm run test:e2e:ui
+
+# Run tests in headed mode (see browser)
+npm run test:e2e:headed
+```
+
+See [e2e/README.md](./e2e/README.md) for more details about testing.
 
 ## Architecture
 

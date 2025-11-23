@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
-import { DashboardPage } from "./app/pages/DashboardPage";
+import { DashboardPage } from "../pages/DashboardPage";
 
 export const getRedirect = (path: string, route: string) => {
 	const element = <Navigate to={route} replace />;

@@ -1,15 +1,20 @@
 .ticket-card {
 	padding: var(--spacing-md);
 	margin-bottom: var(--spacing-md);
-	cursor: grab;
+	cursor: pointer;
 }
 
-.ticket-card:active {
-	cursor: grabbing;
+.ticket-card--disabled {
+	cursor: default;
+	opacity: 0.8;
+}
+
+.ticket-card--disabled:hover {
+	cursor: default;
 }
 
 .ticket-card--dragging {
-	cursor: grabbing;
+	cursor: default;
 	box-shadow: var(--shadow-lg);
 	transform: rotate(2deg);
 }

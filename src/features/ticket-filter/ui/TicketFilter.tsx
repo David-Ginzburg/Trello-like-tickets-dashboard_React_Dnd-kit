@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { Input } from "../../../shared/ui/Input/Input";
+import { useTicketFilterInput } from "../model/hooks/useTicketFilterInput";
 import "./TicketFilter.css";
 
 export interface TicketFilterProps {
@@ -7,16 +7,10 @@ export interface TicketFilterProps {
 }
 
 export const TicketFilter = ({ onFilterChange }: TicketFilterProps) => {
-	const [filterValue, setFilterValue] = useState("");
-
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setFilterValue(value);
-		onFilterChange(value);
-	};
+	const { filterValue, handleChange } = useTicketFilterInput(onFilterChange);
 
 	return (
-		<div className="ticket-filter">
+		<div className="ticket-filter" data-testid="ticket-filter">
 			<Input
 				type="search"
 				variant="search"
@@ -24,8 +18,8 @@ export const TicketFilter = ({ onFilterChange }: TicketFilterProps) => {
 				value={filterValue}
 				onChange={handleChange}
 				className="ticket-filter__input"
+				data-testid="ticket-search-input"
 			/>
 		</div>
 	);
 };
-

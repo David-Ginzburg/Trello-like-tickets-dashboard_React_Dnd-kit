@@ -1,7 +1,8 @@
 .ticket-filter {
 	width: 100%;
 	max-width: 500px;
-	margin-bottom: var(--spacing-lg);
+	flex: 1;
+	min-width: 200px;
 }
 
 .ticket-filter__input {

@@ -1,7 +1,8 @@
 import { Modal } from "../../../shared/ui/Modal/Modal";
 import { TicketActions } from "../../ticket-approval/ui/TicketActions";
 import type { Ticket } from "../../../entities/ticket/model/types";
-import { TICKET_STATUSES } from "../../../shared/config/constants";
+import { TICKET_STATUSES } from "../../../entities/ticket/model/const/constants";
+import { formatDateTime } from "../../../shared/lib/utils";
 import "./TicketDetailsModal.css";
 
 export interface TicketDetailsModalProps {
@@ -59,13 +60,16 @@ export const TicketDetailsModal = ({
 				<div className="ticket-details__section">
 					<label className="ticket-details__label">Created At</label>
 					<p className="ticket-details__value">
-						{new Date(ticket.createdAt).toLocaleString()}
+						{formatDateTime(ticket.createdAt)}
 					</p>
 				</div>
 
-				<TicketActions ticket={ticket} onStatusChange={onStatusChange} />
+				<TicketActions
+					ticket={ticket}
+					onStatusChange={onStatusChange}
+					onClose={onClose}
+				/>
 			</div>
 		</Modal>
 	);
 };
-

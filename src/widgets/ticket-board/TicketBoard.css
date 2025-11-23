@@ -28,6 +28,19 @@
 	margin-bottom: var(--spacing-lg);
 }
 
+.ticket-board__controls {
+	display: flex;
+	gap: var(--spacing-md);
+	align-items: stretch;
+	flex-wrap: wrap;
+}
+
+.ticket-board__controls .button {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+}
+
 .ticket-board__columns {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

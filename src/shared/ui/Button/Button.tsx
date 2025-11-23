@@ -21,13 +21,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 		},
 		ref,
 	) => {
-		return (
-			<button
-				ref={ref}
-				className={`button button--${variant} button--${size} ${className}`}
-				disabled={disabled || isLoading}
-				{...props}
-			>
+	return (
+		<button
+			ref={ref}
+			className={`button button--${variant} button--${size} ${className}`}
+			disabled={disabled || isLoading}
+			{...props}
+		>
 				{isLoading ? (
 					<>
 						<span className="button__spinner" aria-hidden="true" />

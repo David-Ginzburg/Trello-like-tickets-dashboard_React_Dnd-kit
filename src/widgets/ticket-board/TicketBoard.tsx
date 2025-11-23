@@ -1,136 +1,54 @@
-import { useState, useEffect, useMemo } from "react";
-import {
-	DndContext,
-	DragOverlay,
-	PointerSensor,
-	useSensor,
-	useSensors,
-} from "@dnd-kit/core";
-import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { TicketColumn } from "./TicketColumn";
 import { TicketFilter } from "../../features/ticket-filter/ui/TicketFilter";
 import { TicketDetailsModal } from "../../features/ticket-details/ui/TicketDetailsModal";
 import { TicketCard } from "../../entities/ticket/ui/TicketCard";
-import { getTickets, updateTicketStatus } from "../../shared/lib/mockApi";
-import type { Ticket, TicketStatus } from "../../entities/ticket/model/types";
-import { TICKET_STATUS_ORDER } from "../../shared/config/constants";
+import { Button } from "../../shared/ui/Button/Button";
+import { useTickets } from "./model/hooks/useTickets";
+import { useTicketFilter } from "./model/hooks/useTicketFilter";
+import { useTicketGrouping } from "./model/hooks/useTicketGrouping";
+import { useTicketModal } from "./model/hooks/useTicketModal";
+import { useDragAndDrop } from "./model/hooks/useDragAndDrop";
+import type { Ticket } from "../../entities/ticket/model/types";
+import { TICKET_STATUS_ORDER } from "../../entities/ticket/model/const/constants";
 import "./TicketBoard.css";
 
 export const TicketBoard = () => {
-	const [tickets, setTickets] = useState<Ticket[]>([]);
-	const [filter, setFilter] = useState("");
-	const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(true);
-	const [activeId, setActiveId] = useState<string | null>(null);
+	const { tickets, updateTicket, refreshTickets, isLoading, reorderTickets } = useTickets();
+	const {
+		filter,
+		setFilter,
+		selectedTicket,
+		isModalOpen,
+		openModal,
+		closeModal,
+		updateSelectedTicket,
+	} = useTicketModal();
 
-	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 10,
-			},
-		}),
-	);
+	const filteredTickets = useTicketFilter(tickets, filter);
+	const ticketsByStatus = useTicketGrouping(filteredTickets);
 
-	useEffect(() => {
-		const loadTickets = async () => {
-			try {
-				setIsLoading(true);
-				const loadedTickets = await getTickets();
-				setTickets(loadedTickets);
-			} catch (error) {
-				console.error("Failed to load tickets:", error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
+	const {
+		sensors,
+		activeTicket,
+		activeId,
+		collisionDetectionStrategy,
+		handleDragStart,
+		handleDragOver,
+		handleDragEnd,
+		handleDragCancel,
+	} = useDragAndDrop({
+		tickets: filteredTickets,
+		selectedTicket,
+		onTicketUpdate: updateTicket,
+		onSelectedTicketUpdate: updateSelectedTicket,
+		onTicketsReorder: reorderTickets,
+	});
 
-		loadTickets();
-	}, []);
-
-	const filteredTickets = useMemo(() => {
-		if (!filter.trim()) {
-			return tickets;
-		}
-
-		const filterLower = filter.toLowerCase();
-		return tickets.filter(
-			(ticket) =>
-				ticket.customerName.toLowerCase().includes(filterLower) ||
-				ticket.id.toLowerCase().includes(filterLower),
-		);
-	}, [tickets, filter]);
-
-	const ticketsByStatus = useMemo(() => {
-		const grouped: Record<string, Ticket[]> = {
-			ai_resolved: [],
-			pending_approval: [],
-			escalated: [],
-		};
-
-		filteredTickets.forEach((ticket) => {
-			grouped[ticket.status].push(ticket);
-		});
-
-		return grouped;
-	}, [filteredTickets]);
-
-	const handleTicketClick = (ticket: Ticket) => {
-		setSelectedTicket(ticket);
-		setIsModalOpen(true);
+	const handleStatusChange = (updatedTicket: Ticket) => {
+		updateTicket(updatedTicket);
+		updateSelectedTicket(updatedTicket);
 	};
-
-	const handleStatusChange = async (updatedTicket: Ticket) => {
-		setTickets((prevTickets) =>
-			prevTickets.map((ticket) =>
-				ticket.id === updatedTicket.id ? updatedTicket : ticket,
-			),
-		);
-		setSelectedTicket(updatedTicket);
-	};
-
-	const handleCloseModal = () => {
-		setIsModalOpen(false);
-		setSelectedTicket(null);
-	};
-
-	const handleDragStart = (event: DragStartEvent) => {
-		setActiveId(event.active.id as string);
-	};
-
-	const handleDragEnd = async (event: DragEndEvent) => {
-		const { active, over } = event;
-		setActiveId(null);
-
-		if (!over) return;
-
-		const ticketId = active.id as string;
-		const newStatus = over.id as TicketStatus;
-
-		const ticket = tickets.find((t) => t.id === ticketId);
-		if (!ticket) return;
-
-		if (ticket.status === newStatus) return;
-
-		try {
-			const updatedTicket = await updateTicketStatus(ticketId, newStatus);
-			setTickets((prevTickets) =>
-				prevTickets.map((t) =>
-					t.id === updatedTicket.id ? updatedTicket : t,
-				),
-			);
-
-			if (selectedTicket?.id === ticketId) {
-				setSelectedTicket(updatedTicket);
-			}
-		} catch (error) {
-			console.error("Failed to update ticket status:", error);
-		}
-	};
-
-	const activeTicket = activeId
-		? tickets.find((ticket) => ticket.id === activeId)
-		: null;
 
 	if (isLoading) {
 		return (
@@ -143,15 +61,27 @@ export const TicketBoard = () => {
 	return (
 		<DndContext
 			sensors={sensors}
+			collisionDetection={collisionDetectionStrategy}
 			onDragStart={handleDragStart}
+			onDragOver={handleDragOver}
 			onDragEnd={handleDragEnd}
+			onDragCancel={handleDragCancel}
 		>
 			<div className="ticket-board">
 				<div className="ticket-board__header">
-					<h1 className="ticket-board__title">
-						Customer Support AI Agent Dashboard
-					</h1>
-					<TicketFilter onFilterChange={setFilter} />
+					<h1 className="ticket-board__title">Customer Support AI Agent Dashboard</h1>
+					<div className="ticket-board__controls">
+						<TicketFilter onFilterChange={setFilter} />
+						<Button
+							onClick={refreshTickets}
+							variant="secondary"
+							size="md"
+							disabled={isLoading}
+							title="Refresh mock data"
+						>
+							🔄 Refresh Data
+						</Button>
+					</div>
 				</div>
 
 				<div className="ticket-board__columns">
@@ -159,8 +89,10 @@ export const TicketBoard = () => {
 						<TicketColumn
 							key={status}
 							status={status}
-							tickets={ticketsByStatus[status]}
-							onTicketClick={handleTicketClick}
+							tickets={ticketsByStatus[status] || []}
+							onTicketClick={openModal}
+							activeId={activeId}
+							activeTicket={activeTicket}
 						/>
 					))}
 				</div>
@@ -176,7 +108,7 @@ export const TicketBoard = () => {
 				<TicketDetailsModal
 					ticket={selectedTicket}
 					isOpen={isModalOpen}
-					onClose={handleCloseModal}
+					onClose={closeModal}
 					onStatusChange={handleStatusChange}
 				/>
 			</div>

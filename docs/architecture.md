@@ -25,6 +25,37 @@ This ensures international collaboration and code maintainability.
 
 ## Recent Changes (2024)
 
+### Production Storage with IndexedDB
+
+- **Dual storage architecture**: Development uses mock API server, production uses IndexedDB
+- **localforage integration**: Added IndexedDB storage via localforage library for production builds
+- **Automatic adapter switching**: `ticketApi` automatically detects environment and uses appropriate storage
+- **Data persistence**: Production builds now persist data across browser sessions using IndexedDB
+- **Initial data seeding**: IndexedDB automatically initializes with mock data if empty
+- **API compatibility**: Same API interface works in both dev and production modes
+
+### UI Layout Improvements
+
+- **Controls layout**: Moved "Refresh Data" button to the right of search input
+- **Visual alignment**: Button and search input now have matching height and are properly aligned
+- **Styling consistency**: Updated button size from "sm" to "md" to match input height
+- **Flex layout**: Improved flex container with `align-items: stretch` for consistent element heights
+
+### Mock API Refactoring
+
+- **Code organization**: Moved all mock API logic from `vite.config.ts` to `src/shared/mock/` directory
+- **Separation of concerns**: Split mock data management (`mockData.ts`) and Vite plugin (`mockApiPlugin.ts`)
+- **Better maintainability**: Mock API code is now organized in dedicated shared module
+- **Type safety**: Uses shared Ticket types from entities layer
+
+### Enhanced Drag-and-Drop Functionality
+
+- **Standard dnd-kit implementation**: Uses standard dnd-kit hooks (`useDroppable`, `useSortable`) with custom collision detection
+- **Multi-container sorting**: Cards can be sorted within columns and moved between columns with automatic position detection
+- **Real-time updates**: `onDragOver` handler updates card positions in real-time as user drags between columns
+- **Backend persistence**: Order changes are saved to backend via `/api/tickets/reorder` endpoint
+- **Visual feedback**: Cards automatically shift to make space when dragging (standard dnd-kit behavior via `transform`)
+
 ### Customer Support AI Agent Dashboard Implementation
 
 - **New application**: Customer Support AI Agent Dashboard built with Vite + React + TypeScript
@@ -34,6 +65,7 @@ This ensures international collaboration and code maintainability.
 - **Components**: Full set of reusable UI components (Button, Input, Card, Modal)
 - **Ticket Management**: Three-column board with status-based organization (AI Resolved, Pending Approval, Escalated)
 - **Features**: Ticket filtering, approval/rejection workflow, detailed view modal
+- **Drag-and-Drop**: Status change via drag-and-drop with visual feedback
 
 ### Migration to Feature-Sliced Design (FSD)
 
@@ -206,10 +238,10 @@ src/
 │           └── TicketFilter.tsx
 ├── entities/               # Entities layer (business entities)
 │   └── ticket/
-│       ├── api/
-│       │   └── ticketApi.ts (via shared/lib/mockApi.ts)
 │       ├── model/
-│       │   └── types.ts
+│       │   ├── types.ts
+│       │   └── const/
+│       │       └── constants.ts
 │       └── ui/
 │           └── TicketCard.tsx
 └── shared/                 # Shared layer (reusable code)
@@ -218,10 +250,14 @@ src/
     │   ├── Input/
     │   ├── Card/
     │   └── Modal/
+    ├── api/                # API clients
+    │   ├── ticketApi.ts    # Unified ticket API (switches between dev/prod adapters)
+    │   └── indexedDbAdapter.ts # IndexedDB adapter for production mode
+    ├── mock/               # Mock API implementation
+    │   ├── mockData.ts     # Mock data generation and management
+    │   └── mockApiPlugin.ts # Vite plugin for mock API middleware
     ├── lib/
-    │   └── mockApi.ts      # Mock API for tickets
-    ├── config/
-    │   └── constants.ts    # Constants and configuration
+    │   └── utils.ts        # Utility functions
     └── styles/             # Global styles
         ├── tokens.css      # Design tokens (CSS variables)
         ├── reset.css       # CSS reset
@@ -241,15 +277,41 @@ The application uses a comprehensive design system based on CSS custom propertie
 
 All components use design tokens for consistent styling and easy theming.
 
-#### Mock API
+#### Data Storage Architecture
 
-The application uses a localStorage-based mock API:
+The application uses different storage mechanisms depending on the environment:
 
-- **Storage key**: `tickets_data`
-- **Functions**:
-  - `getTickets()`: Returns all tickets, initializes with mock data if empty
-  - `updateTicketStatus(id, status)`: Updates ticket status and persists to localStorage
-- **Data persistence**: All changes persist across page reloads
+**Development Mode (DEV):**
+- **Mock API Server**: Vite middleware plugin provides HTTP API endpoints
+- **Location**: `src/shared/mock/`
+- **Files**:
+  - `mockData.ts`: Mock data generation and in-memory storage management
+  - `mockApiPlugin.ts`: Vite plugin that provides API middleware for development
+- **Storage**: In-memory storage using Node.js `global` object (persists during dev server lifetime)
+- **Endpoints**:
+  - `GET /api/tickets`: Get all tickets
+  - `POST /api/tickets/refresh`: Reset mock data to initial state
+  - `POST /api/tickets/reorder`: Reorder tickets by IDs array
+  - `POST /api/tickets/:id/move`: Move ticket to another column with specific index
+  - `PATCH /api/tickets/:id`: Update ticket status
+- **Configuration**: Plugin is registered in `vite.config.ts` and only active in development mode
+
+**Production Mode (BUILD):**
+- **IndexedDB Storage**: Client-side storage using localforage library
+- **Location**: `src/shared/api/`
+- **Files**:
+  - `indexedDbAdapter.ts`: IndexedDB adapter using localforage for persistent storage
+  - `ticketApi.ts`: Unified API interface that switches between dev/production adapters
+- **Storage**: IndexedDB via localforage (persists across browser sessions)
+- **Library**: `localforage` - provides async key-value storage with IndexedDB backend
+- **Initialization**: Automatically initializes with mock data if storage is empty
+- **Persistence**: All changes persist across page reloads and browser sessions
+
+**API Adapter Pattern:**
+- `ticketApi.ts` automatically detects environment (`import.meta.env.DEV`)
+- Uses mock server adapter in development mode
+- Uses IndexedDB adapter in production mode
+- Same API interface for both modes, transparent to application code
 
 #### Ticket Statuses
 
@@ -473,12 +535,19 @@ client/src/
 
 ## Customer Support Dashboard API
 
-### Mock API Endpoints
+### Ticket API Endpoints
 
-| Endpoint | Method | Description | Implementation |
-|----------|--------|-------------|----------------|
-| `GET /api/tickets` | GET | Get all tickets | `getTickets()` - localStorage mock |
-| `PUT /api/tickets/:id/status` | PUT | Update ticket status | `updateTicketStatus(id, status)` - localStorage mock |
+The application provides a unified API interface that works differently in dev and production:
+
+| Endpoint | Method | Description | Dev Implementation | Production Implementation |
+|----------|--------|-------------|-------------------|--------------------------|
+| `getTickets()` | - | Get all tickets | `GET /api/tickets` - Vite middleware | IndexedDB via localforage |
+| `refreshTickets()` | - | Reset to initial data | `POST /api/tickets/refresh` - Vite middleware | IndexedDB reset with mock data |
+| `reorderTickets(ticketIds)` | - | Reorder tickets by IDs | `POST /api/tickets/reorder` - Vite middleware | IndexedDB reorder operation |
+| `moveTicketToColumn(id, status, index)` | - | Move ticket to column | `POST /api/tickets/:id/move` - Vite middleware | IndexedDB move operation |
+| `updateTicketStatus(id, status)` | - | Update ticket status | `PATCH /api/tickets/:id` - Vite middleware | IndexedDB update operation |
+
+**Note**: In development mode, endpoints are HTTP requests to Vite middleware. In production mode, all operations are direct IndexedDB operations via localforage, providing the same API interface transparently.
 
 ### Ticket Status Flow
 
@@ -498,6 +567,21 @@ DashboardPage
       ├── TicketFilter
       └── TicketColumn[] (3 columns)
           └── TicketCard[]
+              ├── (onDrag) → Status change via drag-and-drop
               └── (onClick) → TicketDetailsModal
                   └── TicketActions (if pending)
 ```
+
+### Drag-and-Drop Implementation
+
+- **Library**: `@dnd-kit/core` and `@dnd-kit/sortable` for drag-and-drop functionality
+- **Standard hooks**: Uses `useDroppable` and `useSortable` from dnd-kit
+- **Sorting**: Uses `arrayMove` from `@dnd-kit/sortable` for reordering cards within columns
+- **Visual feedback**: 
+  - Cards automatically shift to make space when dragging (standard dnd-kit behavior via `transform`)
+  - Column highlights when dragging over it using `isOver` from `useDroppable`
+  - Dragged card is shown in `DragOverlay` while original becomes transparent
+- **Position tracking**: Uses standard `transform` from `useSortable` - cards automatically move to make space
+- **Status update**: Dropping card in different column updates ticket status via API
+- **Reordering**: Cards can be reordered within the same column or inserted at specific positions in other columns
+- **Restrictions**: Only "pending_approval" tickets can be dragged (disabled in `useSortable`)

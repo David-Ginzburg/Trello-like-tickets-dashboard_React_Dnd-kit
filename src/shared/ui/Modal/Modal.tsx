@@ -53,6 +53,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
 			role="dialog"
 			aria-modal="true"
 			aria-labelledby={title ? "modal-title" : undefined}
+			data-testid="modal"
 		>
 			<div className="modal" ref={modalRef} tabIndex={-1}>
 				<div className="modal__header">
@@ -65,6 +66,7 @@ export const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
 						className="modal__close"
 						onClick={onClose}
 						aria-label="Close modal"
+						data-testid="modal-close-button"
 					>
 						<svg
 							width="24"

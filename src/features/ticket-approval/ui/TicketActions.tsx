@@ -1,43 +1,33 @@
-import { useState } from "react";
 import { Button } from "../../../shared/ui/Button/Button";
-import { updateTicketStatus } from "../../../shared/lib/mockApi";
-import type { Ticket, TicketStatus } from "../../../entities/ticket/model/types";
+import { useTicketApproval } from "../model/hooks/useTicketApproval";
+import type { Ticket } from "../../../entities/ticket/model/types";
 import "./TicketActions.css";
 
 export interface TicketActionsProps {
 	ticket: Ticket;
 	onStatusChange: (ticket: Ticket) => void;
+	onClose?: () => void;
 }
 
-export const TicketActions = ({
-	ticket,
-	onStatusChange,
-}: TicketActionsProps) => {
-	const [isLoading, setIsLoading] = useState(false);
+export const TicketActions = ({ ticket, onStatusChange, onClose }: TicketActionsProps) => {
+	const { isLoading, handleAction } = useTicketApproval({
+		ticket,
+		onStatusChange,
+		onClose,
+	});
 
 	if (ticket.status !== "pending_approval") {
 		return null;
 	}
 
-	const handleAction = async (newStatus: TicketStatus) => {
-		setIsLoading(true);
-		try {
-			const updatedTicket = await updateTicketStatus(ticket.id, newStatus);
-			onStatusChange(updatedTicket);
-		} catch (error) {
-			console.error("Failed to update ticket status:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
 	return (
-		<div className="ticket-actions">
+		<div className="ticket-actions" data-testid="ticket-actions">
 			<Button
 				variant="primary"
 				size="sm"
 				onClick={() => handleAction("ai_resolved")}
 				isLoading={isLoading}
+				data-testid="approve-button"
 			>
 				Approve
 			</Button>
@@ -46,10 +36,10 @@ export const TicketActions = ({
 				size="sm"
 				onClick={() => handleAction("escalated")}
 				isLoading={isLoading}
+				data-testid="reject-button"
 			>
 				Reject
 			</Button>
 		</div>
 	);
 };
-
