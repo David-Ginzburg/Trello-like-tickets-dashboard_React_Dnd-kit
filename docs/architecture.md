@@ -25,6 +25,13 @@ This ensures international collaboration and code maintainability.
 
 ## Recent Changes (2024)
 
+### Search Functionality Refactoring
+
+- **Separated search logic**: Extracted search functionality from `useTicketModal` into dedicated `useTicketSearch` hook
+- **Better separation of concerns**: Search state management is now isolated from modal state management
+- **Hook location**: `src/widgets/ticket-board/model/hooks/useTicketSearch.ts`
+- **Benefits**: Improved code organization, easier to test and maintain search functionality independently
+
 ### Toast Notifications
 
 - **react-toastify integration**: Added toast notifications for user feedback
@@ -422,6 +429,15 @@ src/
 - **Files**: `ticket-board/` - Ticket board widget
 - **Type**: React components with business logic hooks
 - **Rules**: Can use features, entities, and shared layers
+
+**Ticket Board Widget Hooks** (`widgets/ticket-board/model/hooks/`):
+
+- `useTickets()` - Manages ticket data fetching, updates, and reordering
+- `useTicketSearch()` - Manages search filter state (filter string and setter)
+- `useTicketFilter(tickets, filter)` - Filters tickets by customer name or ID
+- `useTicketGrouping(tickets)` - Groups tickets by status
+- `useTicketModal()` - Manages modal state (selected ticket, open/close)
+- `useDragAndDrop()` - Handles drag-and-drop functionality for ticket cards
 
 #### 4. Features Layer (`/src/features/`)
 

@@ -8,6 +8,7 @@ import { useTickets } from "./model/hooks/useTickets";
 import { useTicketFilter } from "./model/hooks/useTicketFilter";
 import { useTicketGrouping } from "./model/hooks/useTicketGrouping";
 import { useTicketModal } from "./model/hooks/useTicketModal";
+import { useTicketSearch } from "./model/hooks/useTicketSearch";
 import { useDragAndDrop } from "./model/hooks/useDragAndDrop";
 import { useIsMobile } from "../../shared/lib/useIsMobile";
 import type { Ticket } from "../../entities/ticket/model/types";
@@ -16,15 +17,9 @@ import "./TicketBoard.css";
 
 export const TicketBoard = () => {
 	const { tickets, updateTicket, refreshTickets, isLoading, reorderTickets } = useTickets();
-	const {
-		filter,
-		setFilter,
-		selectedTicket,
-		isModalOpen,
-		openModal,
-		closeModal,
-		updateSelectedTicket,
-	} = useTicketModal();
+	const { filter, setFilter } = useTicketSearch();
+	const { selectedTicket, isModalOpen, openModal, closeModal, updateSelectedTicket } =
+		useTicketModal();
 
 	const isMobile = useIsMobile();
 	const filteredTickets = useTicketFilter(tickets, filter);
@@ -40,7 +35,7 @@ export const TicketBoard = () => {
 		handleDragEnd,
 		handleDragCancel,
 	} = useDragAndDrop({
-		tickets: tickets,
+		tickets,
 		selectedTicket,
 		onTicketUpdate: updateTicket,
 		onSelectedTicketUpdate: updateSelectedTicket,

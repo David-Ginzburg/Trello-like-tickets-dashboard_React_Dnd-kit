@@ -5,8 +5,6 @@ export const useTicketModal = () => {
 	const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
-	const [filter, setFilter] = useState("");
-
 	const openModal = (ticket: Ticket) => {
 		setSelectedTicket(ticket);
 		setIsModalOpen(true);
@@ -24,11 +22,8 @@ export const useTicketModal = () => {
 	return {
 		selectedTicket,
 		isModalOpen,
-		filter,
-		setFilter,
 		openModal,
 		closeModal,
 		updateSelectedTicket,
 	};
 };
-
